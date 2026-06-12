@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Warm parchment/ivory surfaces based on the Claude design */
+  --parch:       #FAF8F5; /* clean warm off-white/beige background */
+  --parch-mid:   #F3EFE9; /* slightly darker beige/ivory for sidebar/secondary */
+  --parch-deep:  #FFFFFF; /* crisp white for input cards/panels */
+  --parch-line:  rgba(0, 0, 0, 0.08); /* thin, crisp line border */
+  --parch-line-hover: rgba(0, 0, 0, 0.16);
+
+  /* Terracotta / Coral accent matching the sunburst logo in the image */
+  --gold:        #D9663D; /* warm orange/terracotta */
+  --gold-light:  #E87851; /* lighter terracotta */
+  --gold-pale:   #F09A7A;
+  --gold-glow:   rgba(217, 102, 61, 0.08);
+
+  /* Ink/text colors */
+  --text-primary:   #1F1A17; /* rich dark charcoal with warm undertones */
+  --text-secondary: #574F49; /* soft charcoal */
+  --text-muted:     #A59B93; /* warm muted gray for labels/placeholders */
+
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius:    16px;
+  --radius-lg: 24px;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.05);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.08);
+
+  --transition: 0.2s cubic-bezier(0.19,1,0.22,1);
+
+  /* ink mappings for light-mode compatibility */
+  --ink-border:       var(--parch-line);
+  --ink-border-hover: var(--parch-line-hover);
+  --ink-soft:         #FAF8F5; /* input background, matches main bg or soft */
+  --ink-mid:          #FFFFFF; /* card background is pure white */
+  --gold-dim:         var(--gold);
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--parch);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--parch-mid); }
+::-webkit-scrollbar-thumb { background: var(--gold-pale); border-radius: 99px; }
+::selection { background: rgba(217,102,61,0.15); color: var(--text-primary); }

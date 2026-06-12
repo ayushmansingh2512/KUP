@@ -1,0 +1,223 @@
+.ls-root {
+  position: fixed; inset: 0;
+  background: radial-gradient(circle at center, #FDFCFB 0%, var(--parch) 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Subtle parchment texture overlay */
+.ls-grain {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+/* Floating colored ambient light blobs in the background */
+.ls-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}
+.ls-orb--1 {
+  width: 350px; height: 350px;
+  background: var(--gold-glow);
+  top: -120px; left: -100px;
+  animation: float-orb-1 25s ease-in-out infinite alternate;
+}
+.ls-orb--2 {
+  width: 300px; height: 300px;
+  background: var(--gold-glow);
+  bottom: -80px; right: -50px;
+  animation: float-orb-2 22s ease-in-out infinite alternate;
+}
+.ls-orb--3 {
+  width: 250px; height: 250px;
+  background: rgba(217, 102, 61, 0.05);
+  top: 35%; left: 45%;
+  animation: float-orb-3 18s ease-in-out infinite alternate;
+}
+
+@keyframes float-orb-1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(80px, 50px) scale(1.1); }
+}
+@keyframes float-orb-2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-50px, -70px) scale(1.15); }
+}
+@keyframes float-orb-3 {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-30%, -20%) scale(0.9); }
+}
+
+/* Radial light glow behind the monogram seal */
+.ls-seal-bg {
+  position: absolute;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+  top: 20px; left: 20px;
+  z-index: 1;
+  pointer-events: none;
+  animation: pulse-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from { transform: scale(0.8); opacity: 0.4; }
+  to   { transform: scale(1.2); opacity: 0.95; }
+}
+
+/* Seal */
+.ls-seal-wrap {
+  position: relative;
+  width: 180px; height: 180px;
+  margin-bottom: 28px;
+  filter: drop-shadow(0 4px 24px rgba(217, 102, 61, 0.08));
+  animation: breathe 4s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+@keyframes breathe {
+  from { transform: scale(0.96); }
+  to   { transform: scale(1.04); }
+}
+
+.ls-seal { width: 100%; height: 100%; position: relative; z-index: 2; }
+.ls-ring { transform-origin: 90px 90px; }
+
+/* SVG ring draw-in lines followed by smooth rotation */
+.ls-ring--outer {
+  stroke-dasharray: 515;
+  stroke-dashoffset: 515;
+  animation: draw-ring 2.2s cubic-bezier(0.19, 1, 0.22, 1) forwards, spin-cw 25s linear infinite 2.2s;
+}
+
+.ls-ring--mid {
+  stroke-dasharray: 427;
+  stroke-dashoffset: 427;
+  animation: draw-ring 2.4s 0.15s cubic-bezier(0.19, 1, 0.22, 1) forwards, spin-ccw 20s linear infinite 2.55s;
+}
+
+.ls-ring--inner {
+  stroke-dasharray: 339;
+  stroke-dashoffset: 339;
+  animation: draw-ring 2.6s 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards, spin-cw 22s linear infinite 2.9s;
+}
+
+@keyframes draw-ring {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes spin-cw  { to { transform: rotate(360deg); } }
+@keyframes spin-ccw { to { transform: rotate(-360deg); } }
+
+/* Monogram */
+.ls-monogram {
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 90px 90px;
+  animation: monogram-fade-in 1.4s 0.6s cubic-bezier(0.19, 1, 0.22, 1) forwards, pulse-monogram 2.5s ease-in-out infinite alternate 2s;
+}
+
+@keyframes monogram-fade-in {
+  to { opacity: 0.95; transform: scale(1); }
+}
+
+@keyframes pulse-monogram {
+  from { opacity: 0.75; }
+  to   { opacity: 1; }
+}
+
+/* Staggered Title Text */
+.ls-title {
+  font-family: var(--serif);
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  z-index: 2;
+  display: flex;
+  gap: 0.5px;
+}
+
+.ls-title span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(14px) scale(0.9);
+  filter: blur(4px);
+  animation: char-fade-in 0.9s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes char-fade-in {
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Subtitle */
+.ls-sub {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 36px;
+  z-index: 2;
+  opacity: 0;
+  filter: blur(2px);
+  transform: translateY(8px);
+  animation: char-fade-in 1s 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+/* Progress */
+.ls-bar-wrap {
+  width: 240px; height: 3px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  position: relative;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.02);
+  z-index: 2;
+}
+
+.ls-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  border-radius: 99px;
+  transition: width 0.04s linear;
+  position: relative;
+}
+
+/* Shimmer shine effect across progress bar */
+.ls-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 1.8s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.ls-pct {
+  font-family: var(--sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  z-index: 2;
+}

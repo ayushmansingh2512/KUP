@@ -1,0 +1,22 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: LinkinAI
+  
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 250MB
+      enabled: true
+
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: gemini-2.5-flash

@@ -1,0 +1,31 @@
+.mini-textarea {
+  min-height: 80px !important;
+  height: 80px;
+}
+
+.outreach-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fade-in 0.3s ease both;
+}
+
+.subject-card {
+  border-left: 2px solid var(--gold-dim) !important;
+}
+
+.tips-card {
+  background: rgba(201, 168, 76, 0.03) !important;
+  border-color: rgba(201, 168, 76, 0.15) !important;
+}
+
+.tips-text {
+  font-style: italic;
+  font-size: 0.8rem !important;
+  color: var(--text-secondary);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -1,0 +1,18 @@
+/* ─── App Shell ─── */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--parch);
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--parch);
+}
+
+.hidden-tab {
+  display: none !important;
+}
