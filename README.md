@@ -1,3 +1,13 @@
+---
+title: KUP
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # LinkinAI - Ultimate LinkedIn Personal Branding Assistant
 
 LinkinAI is a full-stack web application designed for university students and professionals to automate and optimize their LinkedIn branding. It leverages Gemini AI to generate high-converting headlines, bios, project summaries, and cold outreach drafts, alongside an OpenCV-powered background removal and template compositing suite for professional Profile Pictures (PFP).
