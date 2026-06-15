@@ -52,7 +52,12 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  /* Prevent elastic scroll on iOS for the body */
+  overscroll-behavior: none;
+  /* Improve tap responsiveness on mobile */
+  touch-action: manipulation;
 }
 
 ::-webkit-scrollbar { width: 5px; }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import LoadingScreen from './components/LoadingScreen'
 import { getApiUrl } from './apiConfig'
-import Sidebar from './components/Sidebar'
+import Sidebar, { MobileHeader, BottomNav } from './components/Sidebar'
 import PhotoEditor from './components/PhotoEditor'
 import HeadlineGenerator from './components/HeadlineGenerator'
 import BioGenerator from './components/BioGenerator'
@@ -53,8 +53,13 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {/* Desktop: Left sidebar */}
       <Sidebar route={route} setRoute={setRoute} onReset={() => { setPersonUrl(null); setUploadError(null) }} />
+
       <main className="app-main">
+        {/* Mobile: Sticky top header (hidden on desktop via CSS) */}
+        <MobileHeader />
+
         <div className={route === ROUTES.headline ? '' : 'hidden-tab'}>
           <HeadlineGenerator />
         </div>
@@ -77,6 +82,13 @@ export default function App() {
           />
         </div>
       </main>
+
+      {/* Mobile: Fixed bottom nav (hidden on desktop via CSS) */}
+      <BottomNav
+        route={route}
+        setRoute={setRoute}
+        onReset={() => { setPersonUrl(null); setUploadError(null) }}
+      />
     </div>
   )
 }

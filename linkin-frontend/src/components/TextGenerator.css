@@ -252,3 +252,13 @@
   .tg-layout { grid-template-columns: 1fr; }
   .tg-page   { padding: 24px 20px; }
 }
+
+@media (max-width: 480px) {
+  .tg-page   { padding: 16px 14px; }
+  .tg-layout { gap: 20px; }
+  .tg-textarea { min-height: 120px; }
+  .btn-generate { font-size: 0.82rem; padding: 13px 20px; }
+  .result-card  { padding: 16px 14px; }
+  .tg-audience-grid { gap: 5px; }
+  .audience-pill { font-size: 0.68rem; padding: 5px 11px; }
+}

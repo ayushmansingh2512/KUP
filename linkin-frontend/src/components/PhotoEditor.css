@@ -372,4 +372,15 @@
   .editor-layout { grid-template-columns: 1fr; }
   .editor-canvas { width: 100%; height: auto; }
   .editor-page   { padding: 24px 20px; }
+  .dropzone { width: 100%; height: 260px; }
+}
+
+@media (max-width: 480px) {
+  .editor-page      { padding: 14px 12px; }
+  .page-title       { font-size: 1.5rem; }
+  .dropzone         { height: 220px; }
+  .editor-canvas    { border-radius: var(--radius-sm); }
+  .editor-controls  { padding: 16px 14px; }
+  .canvas-actions   { flex-wrap: wrap; gap: 6px; }
+  .bg-grid          { grid-template-columns: repeat(3, 1fr); gap: 6px; }
 }
