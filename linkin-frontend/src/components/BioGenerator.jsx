@@ -2,27 +2,44 @@ import { useState } from 'react'
 import { getApiUrl } from '../apiConfig'
 import './TextGenerator.css'
 
+const TONES = [
+  { id: 'Professional', label: 'Professional' },
+  { id: 'Short & Sweet', label: 'Short & Sweet' },
+  { id: 'Enthusiastic', label: 'Enthusiastic' }
+]
+
 export default function BioGenerator() {
   const [rawText,     setRawText]     = useState('')
-  const [result,      setResult]      = useState(null)
+  const [tone,        setTone]        = useState('Professional')
+  const [bios,        setBios]        = useState([])
   const [loading,     setLoading]     = useState(false)
   const [error,       setError]       = useState(null)
-  const [copied,      setCopied]      = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState(null)
 
   async function generate() {
     if (!rawText.trim()) return
     setLoading(true)
     setError(null)
-    setResult(null)
+    setBios([])
+
     try {
       const res = await fetch(getApiUrl('/api/v1/linkin/genrate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetAudience: 'General', rawProjectText: rawText, projectName: '' }),
+        body: JSON.stringify({ 
+          targetAudience: 'General', 
+          rawProjectText: rawText, 
+          projectName: '', 
+          tone
+        }),
       })
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()
-      setResult(data.bio)
+      if (data.bios && data.bios.length > 0) {
+        setBios(data.bios)
+      } else {
+        setBios([data.bio])
+      }
     } catch (e) {
       setError(e.message)
     } finally {
@@ -30,10 +47,10 @@ export default function BioGenerator() {
     }
   }
 
-  function copy() {
-    navigator.clipboard.writeText(result)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  function copyBio(text, index) {
+    navigator.clipboard.writeText(text)
+    setCopiedIndex(index)
+    setTimeout(() => setCopiedIndex(null), 2000)
   }
 
   return (
@@ -63,6 +80,23 @@ export default function BioGenerator() {
             <div className="tg-char-count">{rawText.length} chars</div>
           </div>
 
+          {/* Tone Selector */}
+          <div className="tg-field">
+            <label className="tg-label">Bio Tone</label>
+            <div className="tg-audience-grid">
+              {TONES.map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`audience-pill ${tone === t.id ? 'active' : ''}`}
+                  onClick={() => setTone(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             id="btn-generate-bio"
             className={`btn-generate ${loading ? 'loading' : ''}`}
@@ -85,8 +119,8 @@ export default function BioGenerator() {
         </div>
 
         {/* ── Result Panel ── */}
-        <div className={`tg-result-panel ${result ? 'has-result' : ''}`}>
-          {!result && !loading && (
+        <div className={`tg-result-panel ${bios.length > 0 ? 'has-result' : ''}`}>
+          {bios.length === 0 && !loading && (
             <div className="tg-empty">
               <div className="tg-empty-seal">✦</div>
               <p>Your generated LinkedIn Bio will appear here</p>
@@ -98,20 +132,27 @@ export default function BioGenerator() {
               <p>Consulting the AI…</p>
             </div>
           )}
-          {result && (
-            <div id="result-bio" className="result-card">
-              <div className="result-card-header">
-                <div>
-                  <div className="result-eyebrow">LinkedIn Bio · About Section</div>
-                  <div className="result-title">Bio Output</div>
+          {bios.length > 0 && (
+            <div className="outreach-results-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+              {bios.map((b, idx) => (
+                <div key={idx} id={`result-bio-${idx}`} className="result-card">
+                  <div className="result-card-header">
+                    <div>
+                      <div className="result-eyebrow">{tone} Style</div>
+                      <div className="result-title">Bio Option {idx + 1}</div>
+                    </div>
+                    <button 
+                      className={`btn-copy ${copiedIndex === idx ? 'copied' : ''}`} 
+                      onClick={() => copyBio(b, idx)}
+                    >
+                      {copiedIndex === idx ? '✓ Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="result-hairline" />
+                  <p className="result-text">{b}</p>
+                  <div className="result-chars">{b.length} chars</div>
                 </div>
-                <button className={`btn-copy ${copied ? 'copied' : ''}`} onClick={copy}>
-                  {copied ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
-              <div className="result-hairline" />
-              <p className="result-text">{result}</p>
-              <div className="result-chars">{result.length} chars</div>
+              ))}
             </div>
           )}
         </div>

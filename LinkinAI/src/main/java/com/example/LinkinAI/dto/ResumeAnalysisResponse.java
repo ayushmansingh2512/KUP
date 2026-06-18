@@ -1,4 +1,4 @@
-package com.example.LinkinAI.dto; 
+package com.example.LinkinAI.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,10 +8,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LinkedInProfileResponse {
-    private String headline;
-    private String bio;
-    private String projectSummary;    
+public class ResumeAnalysisResponse {
     private List<String> headlines;
     private List<String> bios;
+    private List<String> suggestions;
 }

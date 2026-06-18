@@ -42,4 +42,6 @@ public class LinkedInProfileRequest {
 
 	private String projectName;
 
+	private String tone;
+
 }

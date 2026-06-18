@@ -4,6 +4,7 @@ import com.example.LinkinAI.dto.LinkedInProfileRequest;
 import com.example.LinkinAI.dto.LinkedInProfileResponse;
 import com.example.LinkinAI.dto.LinkedInOutreachRequest;
 import com.example.LinkinAI.dto.LinkedInOutreachResponse;
+import com.example.LinkinAI.dto.ResumeAnalysisResponse;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -52,15 +53,32 @@ public class LinkedInController {
 
 	@PostMapping(value = "/genrate", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<LinkedInProfileResponse> genrateContent(@RequestBody LinkedInProfileRequest request) {
+		String tone = request.getTone() != null ? request.getTone() : "Professional";
 		String systemPrompt = """
-				    You are an elite, world-class technical copywriter and profile optimization expert.
+				    You are an elite, world-class technical copywriter and profile optimization expert, specializing in university students and graduates from KIET Group of Institutions (KIET University), Ghaziabad.
 				    Your task is to analyze the incoming details (which may include career details, skills, experience, or project details) and generate professional LinkedIn content.
 
 				    CRITICAL OUTPUT CONSTRAINTS:
 				    1. The 'headline' field MUST be a highly punchy, professional LinkedIn headline (strictly under 180 characters).
 				    2. The 'bio' field MUST be an engaging LinkedIn Bio / Profile Summary (About section) summarizing their professional profile, core strengths, and value proposition (strictly under 450 characters).
 				    3. The 'projectSummary' field MUST be a structurally sound summary of the project details described in the input (strictly under 450 characters). If no specific project is described in the input, provide a brief template summary of a project relevant to their role.
-				""";
+				    4. The 'headlines' field MUST be a list of EXACTLY 3 distinct, highly punchy, and modern LinkedIn headlines (each strictly under 180 characters) tailored to the student. They must follow these styles:
+				       - Style 1 (Classic/Role-based): Focuses on target roles and core technical skills (e.g., Aspiring Software Engineer | Java & Spring Boot | CSE Undergrad @ KIET).
+				       - Style 2 (Project/Value-driven): Focuses on what they build and their impact (e.g., Full-Stack Developer | Creating scalable web solutions | CSE Student at KIET).
+				       - Style 3 (Achiever/Creative): Highlights hackathons, coding platforms, or positions of responsibility (e.g., SIH Finalist | Lead Developer @ GDSC KIET | AI/ML Enthusiast).
+				    5. The 'bios' field MUST be a list of EXACTLY 3 distinct, engaging LinkedIn Bios / Profile Summaries (About sections) tailored to the requested tone: "%s". Each bio must be strictly under 450 characters.
+				       - If Tone is 'Professional': Clear, structured, standard business-professional style.
+				       - If Tone is 'Short & Sweet': Concise, ultra-punchy, high-impact overview (around 2-3 sentences).
+				       - If Tone is 'Enthusiastic': Warm, energetic, conversational style highlighting passion for learning and technology.
+
+				    CRITICAL FORMATTING CONSTRAINTS FOR BIOS:
+				    - All generated bios (both the single 'bio' and list of 'bios') MUST be written in the FIRST PERSON (e.g., 'I am...', 'My experience...', 'I specialize in...').
+				    - NEVER write in the third person. Do not use the user's name (like 'Ayushman is...') or pronouns like 'He/She'. It must be a self-description.
+
+				    KIET SPECIFIC CONTEXT FOR BOTH HEADLINES & BIOS:
+				    - Incorporate standard college lingo and accomplishments (e.g. branch specializations like CSE, IT, ECE, MCA, MBA; projects done under faculty guidance or CRPC cell; coding clubs like GDSC, IEEE, department societies; hackathons like SIH - Smart India Hackathon).
+				    - Highlight target student/fresher keywords (e.g., 'CS Undergrad at KIET', 'Aspiring Developer', 'Software Engineer Intern').
+				""".formatted(tone);
 		StringBuilder detailsBuilder = new StringBuilder();
 		if (request.getTargetAudience() != null && !request.getTargetAudience().trim().isEmpty() && !request.getTargetAudience().equalsIgnoreCase("General")) {
 			detailsBuilder.append("Target Audience: ").append(request.getTargetAudience()).append("\n");
@@ -201,4 +219,43 @@ public class LinkedInController {
 		return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(result);
 	}
 
+	@PostMapping(value = "/analyze-resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = "application/json")
+	public ResponseEntity<ResumeAnalysisResponse> analyzeResume(
+			@RequestPart("resume") MultipartFile resumeFile) throws IOException {
+		
+		String extractedText = "";
+		try (org.apache.pdfbox.pdmodel.PDDocument document = org.apache.pdfbox.pdmodel.PDDocument.load(resumeFile.getBytes())) {
+			org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper();
+			extractedText = stripper.getText(document);
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to extract text from PDF resume: " + e.getMessage(), e);
+		}
+
+		String systemPrompt = """
+				    You are an elite, world-class career coach, resume auditor, and profile optimizer.
+				    Your task is to analyze the text extracted from a student/professional's resume and generate optimized LinkedIn content and resume improvements.
+
+				    CRITICAL OUTPUT CONSTRAINTS:
+				    1. The 'headlines' field MUST be a list of EXACTLY 3 distinct, high-impact LinkedIn headlines (each strictly under 180 characters) optimized for their profile. Incorporate student/fresher context if the user's resume mentions KIET Group of Institutions (Ghaziabad) or if they are a student:
+				       - Style 1 (Classic/Role-based): Focus on role & skills.
+				       - Style 2 (Project/Value-driven): Focus on projects & impact.
+				       - Style 3 (Achiever/Creative): Focus on hackathons, ranks, or clubs.
+				    2. The 'bios' field MUST be a list of EXACTLY 3 distinct, engaging LinkedIn Bios / Profile Summaries (About sections) in the FIRST PERSON (e.g. 'I am...', 'My focus...'). Each must be strictly under 450 characters.
+				       - Bio 1: Professional, structured tone.
+				       - Bio 2: Short & sweet (2-3 sentences).
+				       - Bio 3: Enthusiastic & passionate.
+				    3. The 'suggestions' field MUST be a list of EXACTLY 3-4 highly actionable suggestions to improve their resume (each suggestion strictly under 250 characters). Do not write generic remarks; suggest direct fixes based on standard resume formatting, date formats, metric improvements, or skill groupings.
+
+				    NEVER use third-person (like 'Ayushman is...') in the bios.
+				""";
+
+		ResumeAnalysisResponse structuredOutput = chatClient.prompt()
+				.system(systemPrompt)
+				.user("Extracted Resume Text:\n" + extractedText)
+				.call()
+				.entity(new ParameterizedTypeReference<ResumeAnalysisResponse>() {
+				});
+
+		return ResponseEntity.ok(structuredOutput);
+	}
 }

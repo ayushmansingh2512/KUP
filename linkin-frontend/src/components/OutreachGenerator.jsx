@@ -36,6 +36,7 @@ export default function OutreachGenerator() {
   const [copiedSubject, setCopiedSubject] = useState(false)
   const [copiedBody, setCopiedBody] = useState(false)
 
+
   async function generate() {
     if (!profile.trim() || !company.trim()) return
     setLoading(true)

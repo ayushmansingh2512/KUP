@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
 const NAV = [
@@ -5,6 +6,7 @@ const NAV = [
   { id: 'bio',      icon: IconUser,      label: 'Bio',       fullLabel: 'Bio Generator' },
   { id: 'project',  icon: IconBriefcase, label: 'Projects',  fullLabel: 'Project Summary' },
   { id: 'outreach', icon: IconMail,      label: 'Outreach',  fullLabel: 'Outreach Gen' },
+  { id: 'resume',   icon: IconDocument,  label: 'Resume',    fullLabel: 'Resume Analyzer' },
   { id: 'editor',   icon: IconCamera,    label: 'PFP',       fullLabel: 'PFP Editor' },
 ]
 
@@ -53,8 +55,20 @@ function IconBriefcase({ size = 20 }) {
   )
 }
 
+function IconDocument({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+  )
+}
+
 /* ─── Desktop Sidebar ─── */
-export default function Sidebar({ route, setRoute, onReset }) {
+export default function Sidebar({ onReset }) {
   return (
     <aside className="sidebar">
       {/* Brand */}
@@ -72,16 +86,21 @@ export default function Sidebar({ route, setRoute, onReset }) {
       <nav className="sidebar-nav">
         <p className="sidebar-section-label">Modules</p>
         {NAV.map(({ id, icon: Icon, fullLabel }) => (
-          <button
+          <NavLink
             key={id}
             id={`nav-${id}`}
-            className={`sidebar-navbtn ${route === id ? 'active' : ''}`}
-            onClick={() => { setRoute(id); if (id === 'editor') onReset() }}
+            to={`/${id}`}
+            className={({ isActive }) => `sidebar-navbtn ${isActive ? 'active' : ''}`}
+            onClick={() => { if (id === 'editor') onReset() }}
           >
-            <span className="navbtn-icon"><Icon size={16} /></span>
-            <span className="navbtn-label">{fullLabel}</span>
-            {route === id && <span className="navbtn-indicator" />}
-          </button>
+            {({ isActive }) => (
+              <>
+                <span className="navbtn-icon"><Icon size={16} /></span>
+                <span className="navbtn-label">{fullLabel}</span>
+                {isActive && <span className="navbtn-indicator" />}
+              </>
+            )}
+          </NavLink>
         ))}
       </nav>
 
@@ -116,28 +135,31 @@ export function MobileHeader() {
 }
 
 /* ─── Mobile Bottom Navigation ─── */
-export function BottomNav({ route, setRoute, onReset }) {
+export function BottomNav({ onReset }) {
   return (
     <nav className="bottom-nav" role="navigation" aria-label="Main Navigation">
       {NAV.map(({ id, icon: Icon, label }) => {
-        const isActive = route === id
         return (
-          <button
+          <NavLink
             key={id}
             id={`bottom-nav-${id}`}
-            className={`bnav-item ${isActive ? 'active' : ''}`}
-            onClick={() => { setRoute(id); if (id === 'editor') onReset() }}
+            to={`/${id}`}
+            className={({ isActive }) => `bnav-item ${isActive ? 'active' : ''}`}
+            onClick={() => { if (id === 'editor') onReset() }}
             aria-label={label}
-            aria-current={isActive ? 'page' : undefined}
           >
-            <span className="bnav-icon-wrap">
-              {isActive && <span className="bnav-pill" />}
-              <span className="bnav-icon">
-                <Icon size={22} />
-              </span>
-            </span>
-            <span className="bnav-label">{label}</span>
-          </button>
+            {({ isActive }) => (
+              <>
+                <span className="bnav-icon-wrap">
+                  {isActive && <span className="bnav-pill" />}
+                  <span className="bnav-icon">
+                    <Icon size={22} />
+                  </span>
+                </span>
+                <span className="bnav-label">{label}</span>
+              </>
+            )}
+          </NavLink>
         )
       })}
     </nav>

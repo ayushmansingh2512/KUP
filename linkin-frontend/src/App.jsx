@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom'
 import LoadingScreen from './components/LoadingScreen'
 import { getApiUrl } from './apiConfig'
 import Sidebar, { MobileHeader, BottomNav } from './components/Sidebar'
@@ -7,21 +8,78 @@ import HeadlineGenerator from './components/HeadlineGenerator'
 import BioGenerator from './components/BioGenerator'
 import ProjectGenerator from './components/ProjectGenerator'
 import OutreachGenerator from './components/OutreachGenerator'
+import ResumeAnalyzer from './components/ResumeAnalyzer'
 import './index.css'
 import './App.css'
 
-const ROUTES = {
-  headline: 'headline',
-  bio:      'bio',
-  project:  'project',
-  outreach: 'outreach',
-  editor:   'editor',
+function AppContent({
+  personDataUrl,
+  setPersonUrl,
+  uploading,
+  uploadError,
+  setUploadError,
+  handleUpload
+}) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const currentPath = location.pathname
+
+  // Redirect root and invalid paths to /headline
+  useEffect(() => {
+    const validPaths = ['/headline', '/bio', '/project', '/outreach', '/resume', '/editor']
+    if (currentPath === '/' || !validPaths.includes(currentPath)) {
+      navigate('/headline', { replace: true })
+    }
+  }, [currentPath, navigate])
+
+  return (
+    <div className="app-shell">
+      {/* Desktop: Left sidebar */}
+      <Sidebar onReset={() => { setPersonUrl(null); setUploadError(null) }} />
+
+      <main className="app-main">
+        {/* Mobile: Sticky top header (hidden on desktop via CSS) */}
+        <MobileHeader />
+
+        <div className={currentPath === '/headline' ? '' : 'hidden-tab'}>
+          <HeadlineGenerator />
+        </div>
+        
+        <div className={currentPath === '/bio' ? '' : 'hidden-tab'}>
+          <BioGenerator />
+        </div>
+        
+        <div className={currentPath === '/project' ? '' : 'hidden-tab'}>
+          <ProjectGenerator />
+        </div>
+        
+        <div className={currentPath === '/outreach' ? '' : 'hidden-tab'}>
+          <OutreachGenerator />
+        </div>
+        
+        <div className={currentPath === '/resume' ? '' : 'hidden-tab'}>
+          <ResumeAnalyzer />
+        </div>
+        
+        <div className={currentPath === '/editor' ? '' : 'hidden-tab'}>
+          <PhotoEditor
+            personDataUrl={personDataUrl}
+            uploading={uploading}
+            uploadError={uploadError}
+            onUpload={handleUpload}
+            onReset={() => { setPersonUrl(null); setUploadError(null) }}
+          />
+        </div>
+      </main>
+
+      {/* Mobile: Fixed bottom nav (hidden on desktop via CSS) */}
+      <BottomNav onReset={() => { setPersonUrl(null); setUploadError(null) }} />
+    </div>
+  )
 }
 
 export default function App() {
   const [booted, setBooted]           = useState(false)
-  // Default to headline — that's the main tool
-  const [route, setRoute]             = useState(ROUTES.headline)
   const [personDataUrl, setPersonUrl] = useState(null)
   const [uploading, setUploading]     = useState(false)
   const [uploadError, setUploadError] = useState(null)
@@ -52,43 +110,16 @@ export default function App() {
   if (!booted) return <LoadingScreen />
 
   return (
-    <div className="app-shell">
-      {/* Desktop: Left sidebar */}
-      <Sidebar route={route} setRoute={setRoute} onReset={() => { setPersonUrl(null); setUploadError(null) }} />
-
-      <main className="app-main">
-        {/* Mobile: Sticky top header (hidden on desktop via CSS) */}
-        <MobileHeader />
-
-        <div className={route === ROUTES.headline ? '' : 'hidden-tab'}>
-          <HeadlineGenerator />
-        </div>
-        <div className={route === ROUTES.bio ? '' : 'hidden-tab'}>
-          <BioGenerator />
-        </div>
-        <div className={route === ROUTES.project ? '' : 'hidden-tab'}>
-          <ProjectGenerator />
-        </div>
-        <div className={route === ROUTES.outreach ? '' : 'hidden-tab'}>
-          <OutreachGenerator />
-        </div>
-        <div className={route === ROUTES.editor ? '' : 'hidden-tab'}>
-          <PhotoEditor
-            personDataUrl={personDataUrl}
-            uploading={uploading}
-            uploadError={uploadError}
-            onUpload={handleUpload}
-            onReset={() => { setPersonUrl(null); setUploadError(null) }}
-          />
-        </div>
-      </main>
-
-      {/* Mobile: Fixed bottom nav (hidden on desktop via CSS) */}
-      <BottomNav
-        route={route}
-        setRoute={setRoute}
-        onReset={() => { setPersonUrl(null); setUploadError(null) }}
+    <BrowserRouter>
+      <AppContent
+        personDataUrl={personDataUrl}
+        setPersonUrl={setPersonUrl}
+        uploading={uploading}
+        uploadError={uploadError}
+        setUploadError={setUploadError}
+        handleUpload={handleUpload}
       />
-    </div>
+    </BrowserRouter>
   )
 }
+

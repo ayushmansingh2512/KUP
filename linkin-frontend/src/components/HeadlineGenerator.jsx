@@ -4,25 +4,34 @@ import './TextGenerator.css'
 
 export default function HeadlineGenerator() {
   const [rawText,     setRawText]     = useState('')
-  const [result,      setResult]      = useState(null)
+  const [headlines,   setHeadlines]   = useState([])
   const [loading,     setLoading]     = useState(false)
   const [error,       setError]       = useState(null)
-  const [copied,      setCopied]      = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState(null)
 
   async function generate() {
     if (!rawText.trim()) return
     setLoading(true)
     setError(null)
-    setResult(null)
+    setHeadlines([])
+
     try {
       const res = await fetch(getApiUrl('/api/v1/linkin/genrate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetAudience: 'General', rawProjectText: rawText, projectName: '' }),
+        body: JSON.stringify({ 
+          targetAudience: 'General', 
+          rawProjectText: rawText, 
+          projectName: ''
+        }),
       })
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()
-      setResult(data.headline)
+      if (data.headlines && data.headlines.length > 0) {
+        setHeadlines(data.headlines)
+      } else {
+        setHeadlines([data.headline])
+      }
     } catch (e) {
       setError(e.message)
     } finally {
@@ -30,10 +39,10 @@ export default function HeadlineGenerator() {
     }
   }
 
-  function copy() {
-    navigator.clipboard.writeText(result)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  function copyHeadline(text, index) {
+    navigator.clipboard.writeText(text)
+    setCopiedIndex(index)
+    setTimeout(() => setCopiedIndex(null), 2000)
   }
 
   return (
@@ -85,8 +94,8 @@ export default function HeadlineGenerator() {
         </div>
 
         {/* ── Result Panel ── */}
-        <div className={`tg-result-panel ${result ? 'has-result' : ''}`}>
-          {!result && !loading && (
+        <div className={`tg-result-panel ${headlines.length > 0 ? 'has-result' : ''}`}>
+          {headlines.length === 0 && !loading && (
             <div className="tg-empty">
               <div className="tg-empty-seal">✦</div>
               <p>Your generated LinkedIn Headline will appear here</p>
@@ -98,20 +107,32 @@ export default function HeadlineGenerator() {
               <p>Consulting the AI…</p>
             </div>
           )}
-          {result && (
-            <div id="result-headline" className="result-card">
-              <div className="result-card-header">
-                <div>
-                  <div className="result-eyebrow">LinkedIn Headline · ≤180 Chars</div>
-                  <div className="result-title">Headline Output</div>
-                </div>
-                <button className={`btn-copy ${copied ? 'copied' : ''}`} onClick={copy}>
-                  {copied ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
-              <div className="result-hairline" />
-              <p className="result-text">{result}</p>
-              <div className="result-chars">{result.length} chars</div>
+          {headlines.length > 0 && (
+            <div className="outreach-results-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+              {headlines.map((hl, idx) => {
+                const label = idx === 0 ? "Style 1 (Classic/Role-based)" :
+                              idx === 1 ? "Style 2 (Project/Value-driven)" :
+                              "Style 3 (Achiever/Creative)"
+                return (
+                  <div key={idx} id={`result-headline-${idx}`} className="result-card">
+                    <div className="result-card-header">
+                      <div>
+                        <div className="result-eyebrow">{label}</div>
+                        <div className="result-title">Headline Option {idx + 1}</div>
+                      </div>
+                      <button 
+                        className={`btn-copy ${copiedIndex === idx ? 'copied' : ''}`} 
+                        onClick={() => copyHeadline(hl, idx)}
+                      >
+                        {copiedIndex === idx ? '✓ Copied' : 'Copy'}
+                      </button>
+                    </div>
+                    <div className="result-hairline" />
+                    <p className="result-text">{hl}</p>
+                    <div className="result-chars">{hl.length} chars</div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
