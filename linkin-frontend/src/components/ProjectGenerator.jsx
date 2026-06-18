@@ -59,7 +59,7 @@ export default function ProjectGenerator() {
               className="tg-input"
               value={projectName}
               onChange={e => setProjectName(e.target.value)}
-              placeholder="e.g. KIET Utility Programme"
+              placeholder="e.g. KIET LinkedIn Navigator"
             />
           </div>
 

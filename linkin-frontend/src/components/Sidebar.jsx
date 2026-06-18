@@ -75,8 +75,8 @@ export default function Sidebar({ onReset }) {
       <div className="sidebar-brand">
         <div className="brand-seal">K</div>
         <div>
-          <div className="brand-name">KIET Utility</div>
-          <div className="brand-tag">Programme</div>
+          <div className="brand-name">KIET LinkedIn</div>
+          <div className="brand-tag">Navigator</div>
         </div>
       </div>
 
@@ -122,8 +122,8 @@ export function MobileHeader() {
       <div className="mobile-header-brand">
         <div className="mobile-header-seal">K</div>
         <div>
-          <div className="mobile-header-title">KIET Utility</div>
-          <div className="mobile-header-sub">Programme</div>
+          <div className="mobile-header-title">KIET LinkedIn</div>
+          <div className="mobile-header-sub">Navigator</div>
         </div>
       </div>
       <div className="mobile-header-status">

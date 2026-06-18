@@ -54,13 +54,13 @@ export default function LoadingScreen() {
       </div>
 
       <h1 className="ls-title">
-        {"KIET Utility Programme".split("").map((char, index) => (
+        {"KIET LinkedIn Navigator".split("").map((char, index) => (
           <span key={index} style={{ animationDelay: `${index * 0.04}s` }}>
             {char === " " ? "\u00A0" : char}
           </span>
         ))}
       </h1>
-      <p className="ls-sub">by CRPC</p>
+      <p className="ls-sub">By - Training Division - CRPC</p>
 
       <div className="ls-bar-wrap">
         <div className="ls-bar" style={{ width: `${progress}%` }} />
