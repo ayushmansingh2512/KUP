@@ -36,3 +36,9 @@ logs
 
 # ─── Documentation PDFs ───
 KIET_LinkedIn_Navigator_Technical_Documentation.pdf
+
+# Load test scripts and temp files (local dev only)
+image_load_test.cjs
+image_load_test.js
+load_test.js
+test.jpg

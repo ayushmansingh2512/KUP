@@ -21,6 +21,18 @@ import java.util.*;
 @Service
 public class ImageGenerationService {
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Concurrency and HTTP client fields
+    // ─────────────────────────────────────────────────────────────────────────
+    // Limit to 2 concurrent rembg calls to prevent CPU overload on the server.
+    private final java.util.concurrent.Semaphore semaphore = new java.util.concurrent.Semaphore(2);
+    // IMPORTANT: Force HTTP/1.1 because Uvicorn (Python server) does not support
+    // HTTP/2 upgrades. Without this, Java tries to upgrade to HTTP/2, Uvicorn
+    // rejects it, and the image body bytes are silently dropped (received as 0 bytes).
+    private final java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
+        .version(java.net.http.HttpClient.Version.HTTP_1_1)
+        .build();
+
     @PostConstruct
     public void initOpenCV() {
         OpenCV.loadShared();
@@ -176,59 +188,45 @@ public class ImageGenerationService {
     }
 
     /**
-     * Uses Python rembg (U²-Net neural network) — writes to temp files and reads
-     * back.
+     * Uses Python rembg (U²-Net neural network) — calls the persistent
+     * FastAPI server running on localhost over HTTP.
+     * Sends raw image bytes directly (application/octet-stream) instead of multipart
+     * to avoid multipart formatting issues across Java and Python.
+     * Uses a Semaphore to prevent CPU core overload by queuing requests.
      */
     private byte[] removeWithRembg(byte[] inputBytes) throws IOException, InterruptedException {
-        Path tempDir = Files.createTempDirectory("linkin_rembg_");
-        Path inFile = tempDir.resolve("input.jpg");
-        Path outFile = tempDir.resolve("output.png");
-
+        // Step A: Acquire a permit from the semaphore. Blocks if 2 requests are already active.
+        semaphore.acquire();
+        
         try {
-            Files.write(inFile, inputBytes);
+            // Step B: Build the local POST request pointing to our FastAPI daemon.
+            // We send raw bytes directly - no multipart boundary formatting needed.
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("http://127.0.0.1:8000/remove-bg"))
+                // Send raw binary bytes directly - Python reads request.body() directly
+                .header("Content-Type", "application/octet-stream")
+                // Timeout is set to 60 seconds to allow enough time for large images
+                .timeout(java.time.Duration.ofSeconds(60))
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofByteArray(inputBytes))
+                .build();
 
-            String pythonScript = "from rembg import remove\n" +
-                    "from PIL import Image\n" +
-                    "import sys\n" +
-                    "img = Image.open(sys.argv[1])\n" +
-                    "out = remove(img)\n" +
-                    "out.save(sys.argv[2])\n";
+            // Step C: Send the request synchronously to the local daemon
+            java.net.http.HttpResponse<byte[]> response = httpClient.send(
+                request, 
+                java.net.http.HttpResponse.BodyHandlers.ofByteArray()
+            );
 
-            Path scriptFile = tempDir.resolve("rembg_run.py");
-            Files.writeString(scriptFile, pythonScript);
-
-            ProcessBuilder pb = new ProcessBuilder(
-                    "python", scriptFile.toString(),
-                    inFile.toString(), outFile.toString());
-            pb.redirectErrorStream(true);
-            Process proc = pb.start();
-
-            // Drain output
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                while (br.readLine() != null) {
-                }
+            // Step D: Verify the HTTP status code (200 OK means success)
+            if (response.statusCode() != 200) {
+                throw new IOException("Python daemon returned HTTP status " + response.statusCode());
             }
 
-            int exitCode = proc.waitFor();
-            if (exitCode != 0 || !Files.exists(outFile)) {
-                throw new IOException("rembg exited with code " + exitCode);
-            }
+            // Return the transparent PNG bytes directly from memory
+            return response.body();
 
-            return Files.readAllBytes(outFile);
         } finally {
-            // Cleanup temp files
-            try {
-                Files.deleteIfExists(inFile);
-            } catch (Exception ignored) {
-            }
-            try {
-                Files.deleteIfExists(outFile);
-            } catch (Exception ignored) {
-            }
-            try {
-                Files.deleteIfExists(tempDir);
-            } catch (Exception ignored) {
-            }
+            // Step E: Always release the semaphore permit so the next request in queue can run
+            semaphore.release();
         }
     }
 

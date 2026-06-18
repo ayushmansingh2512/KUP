@@ -20,7 +20,7 @@ COPY --from=frontend-build /frontend/dist/ ./src/main/resources/static/
 # Build the jar skipping tests to save build time
 RUN mvn clean package -DskipTests
 
-# Stage 3: Create runtime environment with JRE + Python + rembg
+# Stage 3: Create runtime environment with JRE + Python + rembg + FastAPI
 FROM python:3.10-slim-bookworm
 
 # Install OpenJDK 17 JRE and native graphic libraries required by OpenCV
@@ -32,29 +32,36 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Install rembg (CPU version) and its dependencies
-RUN pip install --no-cache-dir rembg[cpu]
+# Install rembg (CPU version) + FastAPI + Uvicorn for the background removal daemon
+RUN pip install --no-cache-dir rembg[cpu] fastapi uvicorn pillow
 
 # Set up a non-root user (Hugging Face runs as UID 1000)
 RUN useradd -m -u 1000 user
 ENV HOME=/home/user
 WORKDIR /home/user/app
 
-# Pre-download the rembg u2net model into the image cache during build
-# This makes start-up instant and prevents runtime network download delays
+# Pre-download the rembg u2net model weights into the image during build.
+# This makes container start-up instant and avoids runtime network downloads on HF.
 RUN mkdir -p /home/user/.u2net && \
-    python -c "from rembg import remove; import numpy as np; remove(np.zeros((10,10,3), dtype=np.uint8))" && \
+    python -c "from rembg import new_session; new_session('u2net'); print('U2Net model cached successfully')" && \
     chown -R 1000:0 /home/user
 
-# Copy the compiled jar from Stage 2
+# Copy the compiled Spring Boot jar from Stage 2
 COPY --from=build --chown=1000:0 /app/target/LinkinAI-0.0.1-SNAPSHOT.jar app.jar
+
+# Copy the FastAPI background removal Python server
+COPY --chown=1000:0 app.py app.py
+
+# Copy the startup script that launches both services
+COPY --chown=1000:0 start.sh start.sh
+RUN chmod +x start.sh
 
 # Configure permissions for Hugging Face
 USER 1000
 
-# Hugging Face Spaces dynamically routes to port 7860
+# Hugging Face Spaces dynamically routes external traffic to port 7860
 EXPOSE 7860
 ENV PORT=7860
 
-# Run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run both the Python daemon and Spring Boot via the startup script
+ENTRYPOINT ["./start.sh"]

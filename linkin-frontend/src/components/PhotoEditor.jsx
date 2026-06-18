@@ -4,13 +4,15 @@ import './PhotoEditor.css'
 
 const CANVAS_SIZE = 600
 
+// Background images are served directly from Vite's public/background/ folder.
+// This avoids Spring Boot proxy and browser cache issues entirely.
 const BACKGROUNDS = [
-  { id: 'office',    label: 'Office',     src: getApiUrl('/background/office.png') },
-  { id: 'inferno',   label: 'Inferno',    src: getApiUrl('/background/inferno.png') },
-  { id: 'mirage',    label: 'Mirage',     src: getApiUrl('/background/mirage.png') },
-  { id: 'dust2',     label: 'Dust II',    src: getApiUrl('/background/dust2.png') },
-  { id: 'anubis',    label: 'Anubis',     src: getApiUrl('/background/anubis.png') },
-  { id: 'nuke',      label: 'Nuke',       src: getApiUrl('/background/nuke.png') },
+  { id: 'office',    label: 'Office',     src: '/background/office.png' },
+  { id: 'inferno',   label: 'Inferno',    src: '/background/inferno.png' },
+  { id: 'mirage',    label: 'Mirage',     src: '/background/mirage.png' },
+  { id: 'dust2',     label: 'Dust II',    src: '/background/dust2.png' },
+  { id: 'anubis',    label: 'Anubis',     src: '/background/anubis.png' },
+  { id: 'nuke',      label: 'Nuke',       src: '/background/nuke.png' },
 ]
 
 // ─── Drop Zone ──────────────────────────────────────────────────────────────
@@ -98,6 +100,8 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
   const canvasRef = useRef(null)
   const personImgRef = useRef(null)
   const bgImgRef = useRef(null)
+  // Cache for ALL preloaded background Image objects so switching is instant
+  const bgCacheRef = useRef({})
 
   const [bgId,     setBgId]     = useState('office')
   const [scale, setScale] = useState(1.0)
@@ -108,29 +112,44 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
 
   const activeBg = BACKGROUNDS.find(b => b.id === bgId) || BACKGROUNDS[0]
 
-  // Preload background image
+  // ── Preload ALL 6 backgrounds when editor first opens ──────────────────────
+  // Stores every loaded Image in bgCacheRef so clicking any thumbnail is instant
   useEffect(() => {
     if (!personDataUrl) return
-    const img = new Image()
-    img.src = activeBg.src
-    img.onload = () => { bgImgRef.current = img; drawCanvas() }
-    img.onerror = () => console.warn('BG load failed:', activeBg.src)
+    BACKGROUNDS.forEach(bg => {
+      if (bgCacheRef.current[bg.id]) return // already cached
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.src = bg.src
+      img.onload = () => {
+        bgCacheRef.current[bg.id] = img          // save to cache
+        if (bg.id === bgId) {                    // if this is the active bg, render immediately
+          bgImgRef.current = img
+          drawCanvas()
+        }
+      }
+      img.onerror = () => console.warn('BG preload failed:', bg.src)
+    })
+  }, [personDataUrl]) // run once when person image arrives
+
+  // ── Switch active background from cache when bgId changes ──────────────────
+  useEffect(() => {
+    if (!personDataUrl) return
+    const cached = bgCacheRef.current[bgId]
+    if (cached) {
+      // Image already loaded — switch instantly
+      bgImgRef.current = cached
+      drawCanvas()
+    }
+    // If not cached yet the preload effect's onload callback will handle it
   }, [bgId, personDataUrl])
 
-  // Preload person image
+  // ── Load person cutout image when it arrives from server ───────────────────
   useEffect(() => {
     if (!personDataUrl) return
     const img = new Image()
     img.src = personDataUrl
-    img.onload = () => {
-      personImgRef.current = img
-      // Also pre-load the current bg
-      const bg = new Image()
-      bg.crossOrigin = 'anonymous'
-      bg.src = activeBg.src
-      bg.onload = () => { bgImgRef.current = bg; drawCanvas() }
-      bg.onerror = () => drawCanvas()
-    }
+    img.onload = () => { personImgRef.current = img; drawCanvas() }
   }, [personDataUrl])
 
   const drawCanvas = useCallback(() => {
@@ -175,7 +194,8 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
   }
 
   function onPointerDown(e) {
-    e.preventDefault()
+    // Only prevent default when allowed — passive touch listeners block it otherwise
+    if (e.cancelable) e.preventDefault()
     setDragging(true)
     const pos = getCanvasXY(e)
     dragStart.current = { mouseX: pos.x, mouseY: pos.y, origX: posX, origY: posY }
@@ -183,7 +203,9 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
 
   function onPointerMove(e) {
     if (!dragging || !dragStart.current) return
-    e.preventDefault()
+    // Only prevent default when the browser allows it (non-passive events).
+    // Passive touch listeners block preventDefault() and cause console warnings.
+    if (e.cancelable) e.preventDefault()
     const pos = getCanvasXY(e)
     setPosX(Math.max(0, Math.min(1, dragStart.current.origX + pos.x - dragStart.current.mouseX)))
     setPosY(Math.max(0, Math.min(1, dragStart.current.origY + pos.y - dragStart.current.mouseY)))
