@@ -3,3 +3,9 @@
 *.jpeg filter=lfs diff=lfs merge=lfs -text
 *.gif filter=lfs diff=lfs merge=lfs -text
 *.onnx filter=lfs diff=lfs merge=lfs -text
+
+# Disable Git LFS for all files in the frontend project (so Vercel can build them)
+linkin-frontend/**/*.png -filter -diff -merge
+linkin-frontend/**/*.jpg -filter -diff -merge
+linkin-frontend/**/*.jpeg -filter -diff -merge
+linkin-frontend/**/*.gif -filter -diff -merge
