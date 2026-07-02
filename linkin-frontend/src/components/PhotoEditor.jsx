@@ -7,13 +7,14 @@ const CANVAS_SIZE = 600
 // Background images are served directly from Vite's public/background/ folder.
 // This avoids Spring Boot proxy and browser cache issues entirely.
 const BACKGROUNDS = [
-  { id: 'office',    label: 'Office',     src: '/background/office.png' },
-  { id: 'inferno',   label: 'Inferno',    src: '/background/inferno.png' },
-  { id: 'mirage',    label: 'Mirage',     src: '/background/mirage.png' },
-  { id: 'dust2',     label: 'Dust II',    src: '/background/dust2.png' },
-  { id: 'anubis',    label: 'Anubis',     src: '/background/anubis.png' },
-  { id: 'nuke',      label: 'Nuke',       src: '/background/nuke.png' },
+  { id: 'office',    label: 'Office',     src: getApiUrl('/background/office.png') },
+  { id: 'inferno',   label: 'Inferno',    src: getApiUrl('/background/inferno.png') },
+  { id: 'mirage',    label: 'Mirage',     src: getApiUrl('/background/mirage.png') },
+  { id: 'dust2',     label: 'Dust II',    src: getApiUrl('/background/dust2.png') },
+  { id: 'anubis',    label: 'Anubis',     src: getApiUrl('/background/anubis.png') },
+  { id: 'nuke',      label: 'Nuke',       src: getApiUrl('/background/nuke.png') },
 ]
+
 
 // ─── Drop Zone ──────────────────────────────────────────────────────────────
 
