@@ -1,12 +1,4 @@
-# Stage 1: Build the React Frontend
-FROM node:20-alpine AS frontend-build
-WORKDIR /frontend
-COPY linkin-frontend/package*.json ./
-RUN npm ci
-COPY linkin-frontend/ ./
-RUN npm run build
-
-# Stage 2: Build the Java JAR with static frontend resources embedded
+# Stage 1: Build the Java JAR
 FROM maven:3.8.8-eclipse-temurin-17 AS build
 WORKDIR /app
 
@@ -14,13 +6,10 @@ WORKDIR /app
 COPY LinkinAI/pom.xml .
 COPY LinkinAI/src ./src
 
-# Copy build output from frontend-build step directly into Spring Boot's static resources directory
-COPY --from=frontend-build /frontend/dist/ ./src/main/resources/static/
-
 # Build the jar skipping tests to save build time
 RUN mvn clean package -DskipTests
 
-# Stage 3: Create runtime environment with JRE + Python + rembg + FastAPI
+# Stage 2: Create runtime environment with JRE + Python + rembg + FastAPI
 FROM python:3.10-slim-bookworm
 
 # Install OpenJDK 17 JRE and native graphic libraries required by OpenCV
@@ -46,7 +35,7 @@ RUN mkdir -p /home/user/.u2net && \
     python -c "from rembg import new_session; new_session('u2net'); print('U2Net model cached successfully')" && \
     chown -R 1000:0 /home/user
 
-# Copy the compiled Spring Boot jar from Stage 2
+# Copy the compiled Spring Boot jar from Stage 1
 COPY --from=build --chown=1000:0 /app/target/LinkinAI-0.0.1-SNAPSHOT.jar app.jar
 
 # Copy the FastAPI background removal Python server
@@ -65,3 +54,4 @@ ENV PORT=7860
 
 # Run both the Python daemon and Spring Boot via the startup script
 ENTRYPOINT ["./start.sh"]
+

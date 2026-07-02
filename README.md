@@ -77,3 +77,32 @@ Ensure you have Node.js (v18+) installed.
    ```
 
 Open `http://localhost:5173` in your browser. Requests to `/api/...` and `/background/...` are automatically proxied to the backend on port `8080`.
+
+---
+
+## 🌐 Production Deployment
+
+This project is configured for **separated hosting** to ensure maximum build efficiency, scalability, and fast frontend loads:
+1. **Backend:** Hosted on Hugging Face Spaces (fast Docker compilation containing the Spring Boot application and Python daemon).
+2. **Frontend:** Hosted on Vercel (static React frontend pointing directly to the Hugging Face backend).
+
+### 1. Backend Deployment (Hugging Face Spaces)
+Create a new Hugging Face Space using the **Docker** SDK.
+When you push the codebase to your Hugging Face Space repository:
+- It uses the optimized [Dockerfile](file:///c:/Users/91638/Desktop/IMPORTANT/Linkin%20Project/Dockerfile) which only compiles and packages the Java backend and Python background removal daemon (no Node.js or frontend build steps), resulting in 3x faster deployments.
+- Ensure you set the following **Secret** (Environment Variable) in your Hugging Face Space settings:
+  - `GEMINI_API_KEY`: Your Google Gemini API Key.
+
+#### 💡 Auto-Keep-Alive (Self-Pinging)
+Hugging Face free spaces sleep after 48 hours of inactivity. The backend is equipped with an automatic keep-alive system ([KeepAliveService.java](file:///c:/Users/91638/Desktop/IMPORTANT/Linkin%20Project/LinkinAI/src/main/java/com/example/LinkinAI/KeepAliveService.java)) that:
+- Detects the Space's public URL using the Hugging Face native `SPACE_HOST` environment variable.
+- Automatically schedules an internal ping request to itself every 12 minutes to keep the container warm and prevent it from entering sleep mode.
+
+### 2. Frontend Deployment (Vercel)
+Import the `linkin-frontend/` subdirectory as a new project on Vercel:
+1. Set the **Root Directory** to `linkin-frontend`.
+2. Vercel will automatically detect **Vite** and configure the build settings.
+3. Add the following **Environment Variable** in Vercel:
+   - `VITE_API_BASE_URL`: The public URL of your Hugging Face Space (e.g., `https://<username>-<space-name>.hf.space`). This ensures all API calls and background assets are fetched correctly from your backend.
+4. Deploy the project. Vercel will build and host your frontend globally.
+
