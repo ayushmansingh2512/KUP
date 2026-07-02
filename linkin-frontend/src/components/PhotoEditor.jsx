@@ -5,15 +5,15 @@ const CANVAS_SIZE = 600
 
 // Background images are served directly from Vite's public/background/ folder.
 // This avoids Spring Boot proxy and browser cache issues entirely.
-// Background images are in public/background/ — served by the frontend host (Vercel/local dev).
-// Use plain relative paths so they are NEVER routed through the backend.
+// Background images served from ImageKit CDN.
+// This avoids Git LFS issues on Vercel (LFS files are not pulled during build).
 const BACKGROUNDS = [
-  { id: 'office',    label: 'Office',     src: '/background/office.png' },
-  { id: 'inferno',   label: 'Inferno',    src: '/background/inferno.png' },
-  { id: 'mirage',    label: 'Mirage',     src: '/background/mirage.png' },
-  { id: 'dust2',     label: 'Dust II',    src: '/background/dust2.png' },
-  { id: 'anubis',    label: 'Anubis',     src: '/background/anubis.png' },
-  { id: 'nuke',      label: 'Nuke',       src: '/background/nuke.png' },
+  { id: 'office',    label: 'Office',     src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/office.png' },
+  { id: 'inferno',   label: 'Inferno',    src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/inferno.png' },
+  { id: 'mirage',    label: 'Mirage',     src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/mirage.png' },
+  { id: 'dust2',     label: 'Dust II',    src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/dust2.png' },
+  { id: 'anubis',    label: 'Anubis',     src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/anubis.png' },
+  { id: 'nuke',      label: 'Nuke',       src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/nuke.png' },
 ]
 
 
