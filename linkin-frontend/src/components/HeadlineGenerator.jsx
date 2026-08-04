@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import _Lottie from 'lottie-react'
+import headlineLottie from '../lottie/bio_headline.json'
+const Lottie = _Lottie.default ?? _Lottie
 import { getApiUrl } from '../apiConfig'
 import './TextGenerator.css'
 
@@ -49,7 +52,7 @@ export default function HeadlineGenerator() {
     <div className="tg-page">
       <div className="page-header">
         <div className="page-header-left">
-          <div className="page-eyebrow">Module II</div>
+          <div className="page-eyebrow">Module I</div>
           <h1 className="page-title">Headline Generator</h1>
           <p className="page-desc">AI-crafted professional LinkedIn headline tailored to your profile</p>
         </div>
@@ -95,16 +98,10 @@ export default function HeadlineGenerator() {
 
         {/* ── Result Panel ── */}
         <div className={`tg-result-panel ${headlines.length > 0 ? 'has-result' : ''}`}>
-          {headlines.length === 0 && !loading && (
+          {headlines.length === 0 && (
             <div className="tg-empty">
-              <div className="tg-empty-seal">✦</div>
-              <p>Your generated LinkedIn Headline will appear here</p>
-            </div>
-          )}
-          {loading && (
-            <div className="tg-empty">
-              <div className="gen-spinner-lg" />
-              <p>Consulting the AI…</p>
+              <Lottie animationData={headlineLottie} loop autoplay className="tg-empty-lottie" />
+              <p>{loading ? 'Consulting the AI…' : 'Your generated LinkedIn Headline will appear here'}</p>
             </div>
           )}
           {headlines.length > 0 && (

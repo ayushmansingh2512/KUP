@@ -1,0 +1,231 @@
+.dash-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 32px 64px;
+  position: relative;
+  z-index: 20;
+}
+
+.dash-hero {
+  text-align: center;
+  padding: 24px 0 40px;
+}
+
+.dash-greeting {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.dash-greeting-accent {
+  color: var(--primary);
+}
+
+.dash-sub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin: 0 auto 32px;
+  line-height: 1.65;
+}
+
+.dash-search-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 40px rgba(107, 33, 168, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 20px 22px 16px;
+  text-align: left;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.dash-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  min-height: 72px;
+  background: transparent;
+}
+
+.dash-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.dash-search-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 8px;
+}
+
+.dash-search-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.dash-meta-label {
+  color: var(--text-muted);
+}
+
+.dash-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.dash-radio input {
+  accent-color: var(--primary);
+}
+
+.dash-search-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.dash-attach {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.dash-attach:hover {
+  color: var(--primary);
+  background: rgba(107, 33, 168, 0.06);
+}
+
+.dash-submit {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-grid-section {
+  margin-top: 48px;
+}
+
+.dash-grid-header {
+  margin-bottom: 24px;
+}
+
+.dash-grid-title {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.dash-grid-caption {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.dash-card {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius);
+  padding: 18px 16px 20px;
+  cursor: pointer;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+  font-family: inherit;
+}
+
+.dash-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(107, 33, 168, 0.1);
+  border-color: rgba(107, 33, 168, 0.15);
+}
+
+.dash-card:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.dash-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(107, 33, 168, 0.1);
+  color: var(--primary);
+  margin-bottom: 14px;
+}
+
+.dash-card-title {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-deep);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.dash-card-desc {
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .dash-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-page {
+    padding: 0 18px 48px;
+  }
+
+  .dash-hero {
+    padding-top: 8px;
+  }
+
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+}

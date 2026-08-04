@@ -1,17 +1,113 @@
-/* ─── App Shell ─── */
+/* ── App Shell ── */
 .app-shell {
   display: flex;
-  height: 100dvh; /* dynamic viewport height - handles mobile browser chrome */
+  height: 100dvh;
   overflow: hidden;
-  background: var(--parch);
+  background: transparent;
+}
+
+.hero-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* ── Floating Orbs ── */
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Purple orb ─ top-left drift */
+.hero-blob--a {
+  width: 520px;
+  height: 420px;
+  top: -120px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.55) 0%, rgba(109, 40, 217, 0.18) 70%, transparent 100%);
+  animation: orb-a 14s ease-in-out infinite alternate;
+}
+
+/* Indigo orb ─ top-right drift */
+.hero-blob--b {
+  width: 460px;
+  height: 380px;
+  top: -80px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.45) 0%, rgba(79, 70, 229, 0.15) 70%, transparent 100%);
+  animation: orb-b 18s ease-in-out infinite alternate;
+}
+
+/* Rose orb ─ bottom drift */
+.hero-blob--c {
+  width: 400px;
+  height: 360px;
+  bottom: -60px;
+  left: 30%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.40) 0%, rgba(219, 39, 119, 0.12) 70%, transparent 100%);
+  animation: orb-c 22s ease-in-out infinite alternate;
+}
+
+/* Amber orb ─ mid drift */
+.hero-blob--d {
+  width: 300px;
+  height: 280px;
+  top: 40%;
+  right: 15%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.35) 0%, rgba(245, 158, 11, 0.10) 70%, transparent 100%);
+  animation: orb-d 10s ease-in-out infinite alternate;
+}
+
+@keyframes orb-a {
+  0%   { transform: translate(0,    0)    scale(1);    }
+  33%  { transform: translate(80px, 60px) scale(1.08); }
+  66%  { transform: translate(40px, 120px) scale(0.95); }
+  100% { transform: translate(120px, 40px) scale(1.05); }
+}
+@keyframes orb-b {
+  0%   { transform: translate(0,     0)     scale(1);    }
+  40%  { transform: translate(-60px, 80px)  scale(1.1);  }
+  70%  { transform: translate(-120px, 30px) scale(0.93); }
+  100% { transform: translate(-80px, 100px) scale(1.06); }
+}
+@keyframes orb-c {
+  0%   { transform: translate(0,    0)     scale(1);    }
+  30%  { transform: translate(-80px, -60px) scale(1.12); }
+  65%  { transform: translate(60px, -100px) scale(0.9);  }
+  100% { transform: translate(100px, -40px) scale(1.08); }
+}
+@keyframes orb-d {
+  0%   { transform: translate(0,    0)     scale(1);    }
+  50%  { transform: translate(-60px, -80px) scale(1.15); }
+  100% { transform: translate(40px, 60px)  scale(0.92); }
+}
+
+.hero-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.0)  100%);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .app-main {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--parch);
-  /* bottom padding for mobile nav bar (64px bar + 8px gap) */
+  position: relative;
+  z-index: 10;
   padding-bottom: 0;
 }
 
@@ -19,23 +115,28 @@
   display: none !important;
 }
 
-/* ─── Mobile Bottom Nav ─── */
-.bottom-nav {
-  display: none; /* hidden on desktop */
+.module-page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* ─── Mobile: hide sidebar, show bottom nav ─── */
+.bottom-nav {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .app-shell {
     flex-direction: column;
   }
 
-  /* Hide desktop sidebar on mobile */
   .sidebar {
     display: none !important;
   }
 
-  /* Show mobile bottom nav */
+  .top-bar {
+    display: none;
+  }
+
   .bottom-nav {
     display: flex;
     position: fixed;
@@ -43,10 +144,10 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(243, 239, 233, 0.85);
+    background: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(20px) saturate(1.6);
     -webkit-backdrop-filter: blur(20px) saturate(1.6);
-    border-top: 0.5px solid var(--parch-line);
+    border-top: 1px solid var(--parch-line);
     padding: 8px 4px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
     gap: 0;
@@ -54,13 +155,18 @@
     align-items: flex-end;
   }
 
-  /* Main content gets bottom padding so it doesn't hide under nav */
   .app-main {
     padding-bottom: calc(72px + env(safe-area-inset-bottom));
   }
+
+  .hero-blob {
+    width: 120%;
+    filter: blur(50px);
+    height: 14rem;
+    top: -4rem;
+  }
 }
 
-/* ─── Mobile Top Header ─── */
 .mobile-header {
   display: none;
 }
@@ -71,10 +177,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 18px;
-    background: rgba(243, 239, 233, 0.85);
-    backdrop-filter: blur(20px) saturate(1.6);
-    -webkit-backdrop-filter: blur(20px) saturate(1.6);
-    border-bottom: 0.5px solid var(--parch-line);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--parch-line);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -85,58 +190,60 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    text-decoration: none;
+    color: inherit;
   }
 
-  .mobile-header-seal {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 0.5px solid var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--serif);
-    font-size: 0.9rem;
-    color: var(--gold);
-    box-shadow: 0 0 0 3px var(--gold-glow);
-    flex-shrink: 0;
+  .mobile-seal {
+    width: 44px !important;
+    height: 44px !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
   }
+
 
   .mobile-header-title {
     font-family: var(--serif);
-    font-size: 0.88rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.2;
   }
 
   .mobile-header-sub {
-    font-size: 0.54rem;
-    letter-spacing: 0.16em;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
 
-  .mobile-header-status {
+  .mobile-linkedin {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 0.62rem;
-    color: var(--text-muted);
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(10, 102, 194, 0.1);
+    color: #0a66c2;
   }
 
-  .mobile-status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #16a34a;
-    animation: pulse-dot 2s ease infinite;
-    flex-shrink: 0;
+  .mobile-linkedin svg {
+    fill: currentColor;
   }
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
-  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); }
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero-blob {
+    width: 110%;
+    filter: blur(60px);
+  }
 }
 
+@media (min-width: 1025px) {
+  .hero-blob {
+    height: 26rem;
+  }
+}

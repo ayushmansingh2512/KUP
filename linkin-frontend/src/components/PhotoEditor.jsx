@@ -1,19 +1,21 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import _Lottie from 'lottie-react'
+import cameraLottie from '../lottie/camera.json'
 import './PhotoEditor.css'
+
+const Lottie = _Lottie.default ?? _Lottie
 
 const CANVAS_SIZE = 600
 
-// Background images are served directly from Vite's public/background/ folder.
-// This avoids Spring Boot proxy and browser cache issues entirely.
 // Background images served from ImageKit CDN.
 // This avoids Git LFS issues on Vercel (LFS files are not pulled during build).
 const BACKGROUNDS = [
-  { id: 'office',    label: 'Office',     src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/office.png' },
-  { id: 'inferno',   label: 'Inferno',    src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/inferno.png' },
-  { id: 'mirage',    label: 'Mirage',     src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/mirage.png' },
-  { id: 'dust2',     label: 'Dust II',    src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/dust2.png' },
-  { id: 'anubis',    label: 'Anubis',     src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/anubis.png' },
-  { id: 'nuke',      label: 'Nuke',       src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/nuke.png' },
+  { id: 'office', label: 'Office', src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/office.png' },
+  { id: 'inferno', label: 'Inferno', src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/inferno.png' },
+  { id: 'mirage', label: 'Mirage', src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/mirage.png' },
+  { id: 'dust2', label: 'Dust II', src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/dust2.png' },
+  { id: 'anubis', label: 'Anubis', src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/anubis.png' },
+  { id: 'nuke', label: 'Nuke', src: 'https://ik.imagekit.io/nzqflh6xv/KIET-LinkedIn-Nav/nuke.png' },
 ]
 
 
@@ -33,7 +35,7 @@ function DropZone({ onUpload, loading, error }) {
       {/* Page header */}
       <div className="page-header">
         <div className="page-header-left">
-          <div className="page-eyebrow">Module I</div>
+          <div className="page-eyebrow">Module VII</div>
           <h1 className="page-title">PFP Editor</h1>
           <p className="page-desc">Remove background · Composite · Download</p>
         </div>
@@ -56,32 +58,22 @@ function DropZone({ onUpload, loading, error }) {
           <span className="dz-tick dz-tl" /><span className="dz-tick dz-tr" />
           <span className="dz-tick dz-bl" /><span className="dz-tick dz-br" />
 
-          {loading ? (
-            <div className="dz-loading">
-              <div className="dz-spinner" />
-              <p>Removing background…</p>
-              <span>Neural network processing</span>
+          <div className="dz-idle">
+            <div className="dz-icon">
+              <Lottie animationData={cameraLottie} loop autoplay className="dz-camera-lottie" />
             </div>
-          ) : (
-            <div className="dz-idle">
-              <div className="dz-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-              </div>
-              <p className="dz-heading">Drop your photo here</p>
-              <span className="dz-sub">or click to browse · JPG, PNG, WEBP</span>
-            </div>
-          )}
+            <p className="dz-heading">{loading ? 'Removing background…' : 'Drop your photo here'}</p>
+            <span className="dz-sub">{loading ? 'Neural network processing' : 'or click to browse · JPG, PNG, WEBP'}</span>
+          </div>
           <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }}
             onChange={e => pick(e.target.files)} />
         </div>
 
         {error && (
           <div className="dz-error">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            <div className="dz-error-lottie">
+              <Lottie animationData={cameraLottie} loop autoplay />
+            </div>
             {error}
           </div>
         )}
@@ -105,7 +97,7 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
   // Cache for ALL preloaded background Image objects so switching is instant
   const bgCacheRef = useRef({})
 
-  const [bgId,     setBgId]     = useState('office')
+  const [bgId, setBgId] = useState('office')
   const [scale, setScale] = useState(1.0)
   const [posX, setPosX] = useState(0.5)  // 0-1 fraction of canvas
   const [posY, setPosY] = useState(0.5)
@@ -115,7 +107,6 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
   const activeBg = BACKGROUNDS.find(b => b.id === bgId) || BACKGROUNDS[0]
 
   // ── Preload ALL 6 backgrounds when editor first opens ──────────────────────
-  // Stores every loaded Image in bgCacheRef so clicking any thumbnail is instant
   useEffect(() => {
     if (!personDataUrl) return
     BACKGROUNDS.forEach(bg => {
@@ -132,18 +123,16 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
       }
       img.onerror = () => console.warn('BG preload failed:', bg.src)
     })
-  }, [personDataUrl]) // run once when person image arrives
+  }, [personDataUrl])
 
   // ── Switch active background from cache when bgId changes ──────────────────
   useEffect(() => {
     if (!personDataUrl) return
     const cached = bgCacheRef.current[bgId]
     if (cached) {
-      // Image already loaded — switch instantly
       bgImgRef.current = cached
       drawCanvas()
     }
-    // If not cached yet the preload effect's onload callback will handle it
   }, [bgId, personDataUrl])
 
   // ── Load person cutout image when it arrives from server ───────────────────
@@ -196,7 +185,6 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
   }
 
   function onPointerDown(e) {
-    // Only prevent default when allowed — passive touch listeners block it otherwise
     if (e.cancelable) e.preventDefault()
     setDragging(true)
     const pos = getCanvasXY(e)
@@ -205,8 +193,6 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
 
   function onPointerMove(e) {
     if (!dragging || !dragStart.current) return
-    // Only prevent default when the browser allows it (non-passive events).
-    // Passive touch listeners block preventDefault() and cause console warnings.
     if (e.cancelable) e.preventDefault()
     const pos = getCanvasXY(e)
     setPosX(Math.max(0, Math.min(1, dragStart.current.origX + pos.x - dragStart.current.mouseX)))
@@ -244,7 +230,7 @@ export default function PhotoEditor({ personDataUrl, uploading, uploadError, onU
       {/* Page header */}
       <div className="page-header">
         <div className="page-header-left">
-          <div className="page-eyebrow">Module I</div>
+          <div className="page-eyebrow">Module VII</div>
           <h1 className="page-title">PFP Editor</h1>
           <p className="page-desc">Drag to reposition · Scale · Choose background · Download</p>
         </div>

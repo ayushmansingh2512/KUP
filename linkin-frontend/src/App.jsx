@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom'
 import LoadingScreen from './components/LoadingScreen'
+import CustomCursor from './components/CustomCursor'
+import TopBar from './components/TopBar'
 import { getApiUrl } from './apiConfig'
 import Sidebar, { MobileHeader, BottomNav } from './components/Sidebar'
 import PhotoEditor from './components/PhotoEditor'
@@ -9,8 +11,10 @@ import BioGenerator from './components/BioGenerator'
 import ProjectGenerator from './components/ProjectGenerator'
 import OutreachGenerator from './components/OutreachGenerator'
 import ResumeAnalyzer from './components/ResumeAnalyzer'
+import JobFinder from './components/JobFinder'
 import './index.css'
 import './App.css'
+import './components/PhotoEditor.css'
 
 function AppContent({
   personDataUrl,
@@ -24,55 +28,65 @@ function AppContent({
   const navigate = useNavigate()
   const currentPath = location.pathname
 
-  // Redirect root and invalid paths to /headline
   useEffect(() => {
-    const validPaths = ['/headline', '/bio', '/project', '/outreach', '/resume', '/editor']
-    if (currentPath === '/' || !validPaths.includes(currentPath)) {
+    const validPaths = ['/headline', '/bio', '/job-finder', '/project', '/outreach', '/resume', '/editor']
+    if (!validPaths.includes(currentPath)) {
       navigate('/headline', { replace: true })
     }
   }, [currentPath, navigate])
 
   return (
     <div className="app-shell">
-      {/* Desktop: Left sidebar */}
+      <CustomCursor />
       <Sidebar onReset={() => { setPersonUrl(null); setUploadError(null) }} />
 
-      <main className="app-main">
-        {/* Mobile: Sticky top header (hidden on desktop via CSS) */}
-        <MobileHeader />
+      <div className="hero-container">
+        <div className="hero-blob hero-blob--a" aria-hidden />
+        <div className="hero-blob hero-blob--b" aria-hidden />
+        <div className="hero-blob hero-blob--c" aria-hidden />
+        <div className="hero-blob hero-blob--d" aria-hidden />
 
-        <div className={currentPath === '/headline' ? '' : 'hidden-tab'}>
-          <HeadlineGenerator />
-        </div>
-        
-        <div className={currentPath === '/bio' ? '' : 'hidden-tab'}>
-          <BioGenerator />
-        </div>
-        
-        <div className={currentPath === '/project' ? '' : 'hidden-tab'}>
-          <ProjectGenerator />
-        </div>
-        
-        <div className={currentPath === '/outreach' ? '' : 'hidden-tab'}>
-          <OutreachGenerator />
-        </div>
-        
-        <div className={currentPath === '/resume' ? '' : 'hidden-tab'}>
-          <ResumeAnalyzer />
-        </div>
-        
-        <div className={currentPath === '/editor' ? '' : 'hidden-tab'}>
-          <PhotoEditor
-            personDataUrl={personDataUrl}
-            uploading={uploading}
-            uploadError={uploadError}
-            onUpload={handleUpload}
-            onReset={() => { setPersonUrl(null); setUploadError(null) }}
-          />
-        </div>
-      </main>
+        <TopBar />
 
-      {/* Mobile: Fixed bottom nav (hidden on desktop via CSS) */}
+        <main className="app-main">
+          <MobileHeader />
+
+          <div className={`module-page-wrap ${currentPath === '/headline' ? '' : 'hidden-tab'}`}>
+            <HeadlineGenerator />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/bio' ? '' : 'hidden-tab'}`}>
+            <BioGenerator />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/job-finder' ? '' : 'hidden-tab'}`}>
+            <JobFinder />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/project' ? '' : 'hidden-tab'}`}>
+            <ProjectGenerator />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/outreach' ? '' : 'hidden-tab'}`}>
+            <OutreachGenerator />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/resume' ? '' : 'hidden-tab'}`}>
+            <ResumeAnalyzer />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/editor' ? '' : 'hidden-tab'}`}>
+            <PhotoEditor
+              personDataUrl={personDataUrl}
+              uploading={uploading}
+              uploadError={uploadError}
+              onUpload={handleUpload}
+              onReset={() => { setPersonUrl(null); setUploadError(null) }}
+            />
+          </div>
+        </main>
+      </div>
+
       <BottomNav onReset={() => { setPersonUrl(null); setUploadError(null) }} />
     </div>
   )
@@ -122,4 +136,3 @@ export default function App() {
     </BrowserRouter>
   )
 }
-

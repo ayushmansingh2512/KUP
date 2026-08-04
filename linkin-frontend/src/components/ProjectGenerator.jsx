@@ -1,14 +1,17 @@
 import { useState } from 'react'
+import _Lottie from 'lottie-react'
+import projectLottie from '../lottie/projects.json'
+const Lottie = _Lottie.default ?? _Lottie
 import { getApiUrl } from '../apiConfig'
 import './TextGenerator.css'
 
 export default function ProjectGenerator() {
   const [projectName, setProjectName] = useState('')
-  const [rawText,     setRawText]     = useState('')
-  const [result,      setResult]      = useState(null)
-  const [loading,     setLoading]     = useState(false)
-  const [error,       setError]       = useState(null)
-  const [copied,      setCopied]      = useState(false)
+  const [rawText, setRawText] = useState('')
+  const [result, setResult] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [copied, setCopied] = useState(false)
 
   async function generate() {
     if (!rawText.trim()) return
@@ -45,6 +48,7 @@ export default function ProjectGenerator() {
           <h1 className="page-title">Project Summary</h1>
           <p className="page-desc">AI-crafted project description optimized for your projects section</p>
         </div>
+
       </div>
 
       <div className="tg-layout">
@@ -92,7 +96,7 @@ export default function ProjectGenerator() {
 
           {error && (
             <div className="tg-error">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               {error}
             </div>
           )}
@@ -100,16 +104,10 @@ export default function ProjectGenerator() {
 
         {/* ── Result Panel ── */}
         <div className={`tg-result-panel ${result ? 'has-result' : ''}`}>
-          {!result && !loading && (
+          {!result && (
             <div className="tg-empty">
-              <div className="tg-empty-seal">✦</div>
-              <p>Your generated Project Summary will appear here</p>
-            </div>
-          )}
-          {loading && (
-            <div className="tg-empty">
-              <div className="gen-spinner-lg" />
-              <p>Consulting the AI…</p>
+              <Lottie animationData={projectLottie} loop autoplay className="tg-empty-lottie" />
+              <p>{loading ? 'Consulting the AI…' : 'Your generated Project Summary will appear here'}</p>
             </div>
           )}
           {result && (

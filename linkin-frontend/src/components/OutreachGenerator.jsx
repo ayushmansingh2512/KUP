@@ -1,7 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import _Lottie from 'lottie-react'
+import outreachLottie from '../lottie/outreach.json'
 import { getApiUrl } from '../apiConfig'
 import './TextGenerator.css'
 import './OutreachGenerator.css'
+
+const Lottie = _Lottie.default ?? _Lottie
 
 const ROLES = [
   { id: 'Recruiter', label: 'Recruiter' },
@@ -23,6 +28,8 @@ const TONES = [
 ]
 
 export default function OutreachGenerator() {
+  const location = useLocation()
+
   const [profile, setProfile] = useState('')
   const [role, setRole] = useState('Recruiter')
   const [company, setCompany] = useState('')
@@ -36,6 +43,17 @@ export default function OutreachGenerator() {
   const [copiedSubject, setCopiedSubject] = useState(false)
   const [copiedBody, setCopiedBody] = useState(false)
 
+  // Listen to navigation state from JobFinder so context is prefilled INSTANTLY!
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.companyName) setCompany(location.state.companyName)
+      if (location.state.recipientRole) setRole(location.state.recipientRole)
+      if (location.state.jobContext) setContext(location.state.jobContext)
+      if (location.state.studentProfile) setProfile(location.state.studentProfile)
+      setResult(null)
+      setError(null)
+    }
+  }, [location.state])
 
   async function generate() {
     if (!profile.trim() || !company.trim()) return
@@ -89,10 +107,10 @@ export default function OutreachGenerator() {
       <div className="tg-layout">
         {/* ── Input Panel ── */}
         <div className="tg-input-panel">
-          
+
           {/* Profile Details */}
           <div className="tg-field">
-            <label className="tg-label" htmlFor="outreach-profile">Your Profile Summary / Core Skills</label>
+            <label className="tg-label" htmlFor="outreach-profile">Your Profile Summary / Core Skills *</label>
             <textarea
               id="outreach-profile"
               className="tg-textarea"
@@ -106,7 +124,7 @@ export default function OutreachGenerator() {
 
           {/* Company Name */}
           <div className="tg-field">
-            <label className="tg-label" htmlFor="outreach-company">Target Company</label>
+            <label className="tg-label" htmlFor="outreach-company">Target Company *</label>
             <input
               id="outreach-company"
               type="text"
@@ -119,7 +137,7 @@ export default function OutreachGenerator() {
 
           {/* Context Details */}
           <div className="tg-field">
-            <label className="tg-label" htmlFor="outreach-context">Job Context / Role ID (Optional)</label>
+            <label className="tg-label" htmlFor="outreach-context">Job Context / Role Details</label>
             <textarea
               id="outreach-context"
               className="tg-textarea mini-textarea"
@@ -196,7 +214,7 @@ export default function OutreachGenerator() {
 
           {error && (
             <div className="tg-error">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               {error}
             </div>
           )}
@@ -204,16 +222,10 @@ export default function OutreachGenerator() {
 
         {/* ── Result Panel ── */}
         <div className={`tg-result-panel ${result ? 'has-result' : ''}`}>
-          {!result && !loading && (
+          {!result && (
             <div className="tg-empty">
-              <div className="tg-empty-seal">✉</div>
-              <p>Your tailored cold outreach template will appear here</p>
-            </div>
-          )}
-          {loading && (
-            <div className="tg-empty">
-              <div className="gen-spinner-lg" />
-              <p>Drafting networking copy...</p>
+              <Lottie animationData={outreachLottie} loop autoplay className="tg-empty-lottie" />
+              <p>{loading ? 'Drafting networking copy...' : 'Your tailored cold outreach template will appear here'}</p>
             </div>
           )}
           {result && (

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import _Lottie from 'lottie-react'
+import bioLottie from '../lottie/bio_headline.json'
+const Lottie = _Lottie.default ?? _Lottie
 import { getApiUrl } from '../apiConfig'
 import './TextGenerator.css'
 
@@ -9,11 +12,11 @@ const TONES = [
 ]
 
 export default function BioGenerator() {
-  const [rawText,     setRawText]     = useState('')
-  const [tone,        setTone]        = useState('Professional')
-  const [bios,        setBios]        = useState([])
-  const [loading,     setLoading]     = useState(false)
-  const [error,       setError]       = useState(null)
+  const [rawText, setRawText] = useState('')
+  const [tone, setTone] = useState('Professional')
+  const [bios, setBios] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [copiedIndex, setCopiedIndex] = useState(null)
 
   async function generate() {
@@ -26,10 +29,10 @@ export default function BioGenerator() {
       const res = await fetch(getApiUrl('/api/v1/linkin/genrate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          targetAudience: 'General', 
-          rawProjectText: rawText, 
-          projectName: '', 
+        body: JSON.stringify({
+          targetAudience: 'General',
+          rawProjectText: rawText,
+          projectName: '',
           tone
         }),
       })
@@ -57,10 +60,11 @@ export default function BioGenerator() {
     <div className="tg-page">
       <div className="page-header">
         <div className="page-header-left">
-          <div className="page-eyebrow">Module III</div>
+          <div className="page-eyebrow">Module II</div>
           <h1 className="page-title">Bio Generator</h1>
           <p className="page-desc">AI-crafted LinkedIn Bio / About section summarizing your value proposition</p>
         </div>
+
       </div>
 
       <div className="tg-layout">
@@ -112,7 +116,7 @@ export default function BioGenerator() {
 
           {error && (
             <div className="tg-error">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               {error}
             </div>
           )}
@@ -120,16 +124,10 @@ export default function BioGenerator() {
 
         {/* ── Result Panel ── */}
         <div className={`tg-result-panel ${bios.length > 0 ? 'has-result' : ''}`}>
-          {bios.length === 0 && !loading && (
+          {bios.length === 0 && (
             <div className="tg-empty">
-              <div className="tg-empty-seal">✦</div>
-              <p>Your generated LinkedIn Bio will appear here</p>
-            </div>
-          )}
-          {loading && (
-            <div className="tg-empty">
-              <div className="gen-spinner-lg" />
-              <p>Consulting the AI…</p>
+              <Lottie animationData={bioLottie} loop autoplay className="tg-empty-lottie" />
+              <p>{loading ? 'Consulting the AI…' : 'Your generated LinkedIn Bio will appear here'}</p>
             </div>
           )}
           {bios.length > 0 && (
@@ -141,8 +139,8 @@ export default function BioGenerator() {
                       <div className="result-eyebrow">{tone} Style</div>
                       <div className="result-title">Bio Option {idx + 1}</div>
                     </div>
-                    <button 
-                      className={`btn-copy ${copiedIndex === idx ? 'copied' : ''}`} 
+                    <button
+                      className={`btn-copy ${copiedIndex === idx ? 'copied' : ''}`}
                       onClick={() => copyBio(b, idx)}
                     >
                       {copiedIndex === idx ? '✓ Copied' : 'Copy'}

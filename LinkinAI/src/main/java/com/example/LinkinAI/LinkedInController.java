@@ -1,5 +1,7 @@
 package com.example.LinkinAI;
 
+import com.example.LinkinAI.dto.JobFinderRequest;
+import com.example.LinkinAI.dto.JobFinderResponse;
 import com.example.LinkinAI.dto.LinkedInProfileRequest;
 import com.example.LinkinAI.dto.LinkedInProfileResponse;
 import com.example.LinkinAI.dto.LinkedInOutreachRequest;
@@ -78,9 +80,11 @@ public class LinkedInController {
 				    KIET SPECIFIC CONTEXT FOR BOTH HEADLINES & BIOS:
 				    - Incorporate standard college lingo and accomplishments (e.g. branch specializations like CSE, IT, ECE, MCA, MBA; projects done under faculty guidance or CRPC cell; coding clubs like GDSC, IEEE, department societies; hackathons like SIH - Smart India Hackathon).
 				    - Highlight target student/fresher keywords (e.g., 'CS Undergrad at KIET', 'Aspiring Developer', 'Software Engineer Intern').
-				""".formatted(tone);
+				"""
+				.formatted(tone);
 		StringBuilder detailsBuilder = new StringBuilder();
-		if (request.getTargetAudience() != null && !request.getTargetAudience().trim().isEmpty() && !request.getTargetAudience().equalsIgnoreCase("General")) {
+		if (request.getTargetAudience() != null && !request.getTargetAudience().trim().isEmpty()
+				&& !request.getTargetAudience().equalsIgnoreCase("General")) {
 			detailsBuilder.append("Target Audience: ").append(request.getTargetAudience()).append("\n");
 		}
 		if (request.getProjectName() != null && !request.getProjectName().trim().isEmpty()) {
@@ -105,12 +109,13 @@ public class LinkedInController {
 		String systemPrompt = """
 				    You are an elite, world-class career coach and professional networking expert.
 				    Your task is to draft a highly effective networking/cold outreach message (LinkedIn message, InMail, Connection invite note, or Email) for a university student.
-				    
+
 				    CRITICAL OUTPUT CONSTRAINTS:
 				    1. The 'subjectLine' field MUST be a highly professional, click-worthy email subject line (strictly under 75 characters). For non-email mediums (like LinkedIn InMail or Connection Notes), return null or empty.
 				    2. The 'body' field MUST contain the outreach message body:
-				       - Tailored to the recipient's role (Recruiter, Alumnus, Hiring Manager, or Tech Lead) and target company.
-				       - Highlight relevant key points from the student's profile summary and context.
+				       - STRICTLY MUST incorporate and reference the EXACT Target Company name and the EXACT Job Role / Context provided in the input details (DO NOT substitute or change the target company or role to generic defaults).
+				       - Tailored to the recipient's role (Recruiter, Alumnus, Hiring Manager, or Tech Lead).
+				       - Highlight relevant key points from the student's profile summary and requirements.
 				       - For LinkedIn Connection notes, strictly constraint the length to under 300 characters (including placeholders/salutations).
 				       - For other mediums, keep it strictly under 600 characters—concise, clear, and showing dynamic interest.
 				       - Avoid generic cliches, sound natural, warm, and highly professional.
@@ -153,10 +158,12 @@ public class LinkedInController {
 			@RequestParam(value = "all", required = false, defaultValue = "false") boolean all,
 			@RequestPart(value = "request", required = false) String requestJson,
 			@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-			@RequestPart(value = "backgroundImage", required = false) MultipartFile backgroundImage) throws IOException {
+			@RequestPart(value = "backgroundImage", required = false) MultipartFile backgroundImage)
+			throws IOException {
 
 		// 1. Generate all versions using our OpenCV logic
-		java.util.Map<String, byte[]> imagesMap = imageService.generateAllProfilePictures(profileImage, backgroundImage);
+		java.util.Map<String, byte[]> imagesMap = imageService.generateAllProfilePictures(profileImage,
+				backgroundImage);
 
 		if (all) {
 			// Convert raw byte arrays into Base64 Data URIs for frontend rendering
@@ -177,7 +184,8 @@ public class LinkedInController {
 						.body(imagesMap.get("custom"));
 			}
 
-			// Check if a specific template name was explicitly requested (other than default "office")
+			// Check if a specific template name was explicitly requested (other than
+			// default "office")
 			String templateName = null;
 			if (requestJson != null && !requestJson.trim().isEmpty()) {
 				com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -207,7 +215,8 @@ public class LinkedInController {
 
 	/**
 	 * Extracts the person from the uploaded image using background removal (rembg).
-	 * Returns an RGBA PNG as a base64 data URI so the frontend can do live canvas compositing.
+	 * Returns an RGBA PNG as a base64 data URI so the frontend can do live canvas
+	 * compositing.
 	 */
 	@PostMapping(value = "/extract-person", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> extractPerson(
@@ -222,9 +231,10 @@ public class LinkedInController {
 	@PostMapping(value = "/analyze-resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = "application/json")
 	public ResponseEntity<ResumeAnalysisResponse> analyzeResume(
 			@RequestPart("resume") MultipartFile resumeFile) throws IOException {
-		
+
 		String extractedText = "";
-		try (org.apache.pdfbox.pdmodel.PDDocument document = org.apache.pdfbox.pdmodel.PDDocument.load(resumeFile.getBytes())) {
+		try (org.apache.pdfbox.pdmodel.PDDocument document = org.apache.pdfbox.pdmodel.PDDocument
+				.load(resumeFile.getBytes())) {
 			org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper();
 			extractedText = stripper.getText(document);
 		} catch (Exception e) {
@@ -257,5 +267,105 @@ public class LinkedInController {
 				});
 
 		return ResponseEntity.ok(structuredOutput);
+	}
+
+	@PostMapping(value = "/find-jobs", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JobFinderResponse> findJobs(@RequestBody JobFinderRequest request) {
+		String jobTitle = request.getJobTitle() != null && !request.getJobTitle().trim().isEmpty()
+				? request.getJobTitle().trim()
+				: "Software Engineer";
+		String expLevel = request.getExperienceLevel() != null && !request.getExperienceLevel().trim().isEmpty()
+				? request.getExperienceLevel().trim()
+				: "Fresher / Entry Level";
+		String skills = request.getSkills() != null ? request.getSkills().trim() : "";
+		String location = request.getLocation() != null && !request.getLocation().trim().isEmpty()
+				? request.getLocation().trim()
+				: "India";
+		String jobType = request.getJobType() != null && !request.getJobType().trim().isEmpty()
+				? request.getJobType().trim()
+				: "Full-Time";
+		String company = request.getTargetCompany() != null ? request.getTargetCompany().trim() : "";
+
+		String cleanTopKeywords = cleanSearchKeywords(company.isEmpty() ? jobTitle : company + " " + jobTitle, "");
+		String encodedKeywords = java.net.URLEncoder.encode(cleanTopKeywords, java.nio.charset.StandardCharsets.UTF_8);
+		String encodedLocation = java.net.URLEncoder.encode(location, java.nio.charset.StandardCharsets.UTF_8);
+
+		String linkedinUrl = "https://www.linkedin.com/jobs/search/?keywords=" + encodedKeywords + "&location="
+				+ encodedLocation;
+		String googleJobsUrl = "https://www.google.com/search?q=" + java.net.URLEncoder.encode(
+				jobTitle + " jobs in " + location + (company.isEmpty() ? "" : " " + company),
+				java.nio.charset.StandardCharsets.UTF_8) + "&ibp=htl;jobs";
+		String indeedUrl = "https://www.indeed.com/jobs?q=" + encodedKeywords + "&l=" + encodedLocation;
+		String naukriUrl = "https://www.naukri.com/jobs-in-"
+				+ encodedLocation.toLowerCase().replace("+", "-").replace("%20", "-") + "?k=" + encodedKeywords;
+		String glassdoorUrl = "https://www.glassdoor.com/Job/jobs.htm?sc.keyword=" + encodedKeywords;
+
+		String systemPrompt = """
+				   You are an elite Placement Director & Technical Hiring Strategist.
+				   Generate 4 realistic target job opportunities strictly matching the candidate's request.
+
+				   CRITICAL OUTPUT CONSTRAINTS:
+				   1. The 'searchSummary' field MUST be a brief summary (under 200 chars) of the job market matching their search.
+				   2. The 'jobs' list MUST contain EXACTLY 4 job items matching the criteria:
+				      - 'jobTitle': Title of the role (MUST strictly match or directly pertain to the requested Target Role; e.g. if user searched for Data Analyst, return Data Analyst or related analytics roles, NOT generic software engineer roles).
+				      - 'companyName': Company name (If user specified a Target Company, at least 2 jobs MUST be from that target company or direct competitors in that domain; otherwise use top real hiring companies in that domain).
+				      - 'location': Location (MUST match requested location, e.g. Remote, Delhi NCR, Bengaluru).
+				      - 'jobType': MUST match requested Job Type (Full-Time, Internship, Remote, Contract).
+				      - 'salaryRange': Estimated CTC / stipend relevant to experience level and location.
+				      - 'matchScore': Match percentage (e.g. 96% Match).
+				      - 'keyRequirements': 3-4 short tech stack tags strictly matching the candidate's specified tech stack/skills.
+				""";
+
+		StringBuilder userPrompt = new StringBuilder();
+		userPrompt.append("Job Title / Target Role: ").append(jobTitle).append("\n");
+		userPrompt.append("Experience Level: ").append(expLevel).append("\n");
+		if (!skills.isEmpty())
+			userPrompt.append("Tech Stack & Skills: ").append(skills).append("\n");
+		userPrompt.append("Location: ").append(location).append("\n");
+		userPrompt.append("Job Type: ").append(jobType).append("\n");
+		if (!company.isEmpty())
+			userPrompt.append("Target Company / Industry: ").append(company).append("\n");
+
+		JobFinderResponse response = chatClient.prompt()
+				.system(systemPrompt)
+				.user(userPrompt.toString())
+				.call()
+				.entity(new ParameterizedTypeReference<JobFinderResponse>() {
+				});
+
+		response.setLinkedinSearchUrl(linkedinUrl);
+		response.setGoogleJobsUrl(googleJobsUrl);
+		response.setIndeedSearchUrl(indeedUrl);
+		response.setNaukriSearchUrl(naukriUrl);
+		response.setGlassdoorSearchUrl(glassdoorUrl);
+
+		if (response.getJobs() != null) {
+			for (JobFinderResponse.JobItem item : response.getJobs()) {
+				String itemKeywords = cleanSearchKeywords(item.getCompanyName(), item.getJobTitle());
+				String itemLoc = item.getLocation() != null && !item.getLocation().trim().isEmpty()
+						? item.getLocation().trim()
+						: location;
+				String itemUrl = "https://www.linkedin.com/jobs/search/?keywords="
+						+ java.net.URLEncoder.encode(itemKeywords, java.nio.charset.StandardCharsets.UTF_8)
+						+ "&location=" + java.net.URLEncoder.encode(itemLoc, java.nio.charset.StandardCharsets.UTF_8);
+				item.setApplySearchUrl(itemUrl);
+			}
+		}
+
+		return ResponseEntity.ok(response);
+	}
+
+	private String cleanSearchKeywords(String company, String title) {
+		String comp = company != null ? company : "";
+		String tit = title != null ? title : "";
+
+		comp = comp.replaceAll("\\([^)]*\\)", " ");
+		tit = tit.replaceAll("\\([^)]*\\)", " ");
+
+		comp = comp.replaceAll("[^a-zA-Z0-9\\s]", " ");
+		tit = tit.replaceAll("[^a-zA-Z0-9\\s]", " ");
+
+		String combined = (comp + " " + tit).replaceAll("\\s+", " ").trim();
+		return combined.isEmpty() ? "Software Engineer" : combined;
 	}
 }

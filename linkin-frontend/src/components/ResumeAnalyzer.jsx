@@ -1,7 +1,11 @@
 import { useState, useRef } from 'react'
+import _Lottie from 'lottie-react'
+import resumeLottie from '../lottie/resume.json'
 import { getApiUrl } from '../apiConfig'
 import './TextGenerator.css'
 import './ResumeAnalyzer.css'
+
+const Lottie = _Lottie.default ?? _Lottie
 
 export default function ResumeAnalyzer() {
   const [loading, setLoading] = useState(false)
@@ -94,7 +98,7 @@ export default function ResumeAnalyzer() {
 
   return (
     <div className="tg-page">
-      <div className="page-header">
+      <div className={`page-header ${!result ? 'header-centered' : ''}`}>
         <div className="page-header-left">
           <div className="page-eyebrow">Module VI</div>
           <h1 className="page-title">Resume Analyzer</h1>
@@ -102,13 +106,17 @@ export default function ResumeAnalyzer() {
         </div>
       </div>
 
-      <div className="ra-layout">
-        {/* ── Left Column: Upload panel + Suggestions ── */}
-        <div className="ra-results-container">
-          {/* Resume Upload Card */}
+      <div className={`ra-layout ${!result ? 'ra-layout-centered' : ''}`}>
+
+        {/* ── Upload Area / Left Column ── */}
+        <div className="ra-main-card-wrap">
+          {!result && (
+            <div className="ra-hero-lottie">
+              <Lottie animationData={resumeLottie} loop autoplay />
+            </div>
+          )}
+
           <div className="ra-upload-card">
-            <h2 className="tg-label" style={{ alignSelf: 'flex-start' }}>Resume Upload</h2>
-            
             <div
               className={`ra-dropzone ${loading ? 'loading' : ''}`}
               onClick={() => !loading && fileInputRef.current.click()}
@@ -116,13 +124,12 @@ export default function ResumeAnalyzer() {
               onDrop={handleDrop}
             >
               {loading ? (
-                <div className="spinner-wrap">
-                  <div className="spinner" />
-                  <p style={{ color: 'var(--text-secondary)' }}>Extracting & Auditing Resume…</p>
+                <div style={{ padding: '16px', textCenter: 'center' }}>
+                  <p className="ra-upload-main" style={{ color: 'var(--primary)' }}>Extracting &amp; Auditing Resume…</p>
+                  <p className="ra-upload-sub">Consulting our career coach AI model</p>
                 </div>
               ) : (
                 <>
-                  <div className="ra-upload-icon">📄</div>
                   <p className="ra-upload-main">Drop your PDF resume here, or click to browse</p>
                   <p className="ra-upload-sub">Supports standard PDF files up to 10MB</p>
                 </>
@@ -162,7 +169,7 @@ export default function ResumeAnalyzer() {
 
           {/* Suggestions Box */}
           {result && !loading && result.suggestions && result.suggestions.length > 0 && (
-            <div className="ra-section-wrap">
+            <div className="ra-section-wrap" style={{ marginTop: '24px' }}>
               <h2 className="ra-section-title">Resume Suggestions Box</h2>
               <div className="suggestions-box">
                 {result.suggestions.map((suggestion, idx) => (
@@ -176,92 +183,77 @@ export default function ResumeAnalyzer() {
           )}
         </div>
 
-        {/* ── Right Column: Generated Copy (Headlines & Bios) ── */}
-        <div className="ra-results-container">
-          {!result && !loading && (
-            <div className="tg-empty" style={{ minHeight: '300px' }}>
-              <div className="tg-empty-seal">✦</div>
-              <p>Upload a PDF resume to generate optimized headlines, bios, and actionable resume fixes.</p>
-            </div>
-          )}
-
-          {loading && (
-            <div className="tg-empty" style={{ minHeight: '300px' }}>
-              <div className="gen-spinner-lg" />
-              <p>Consulting our career coach AI model…</p>
-            </div>
-          )}
-
-          {result && !loading && (
-            <>
-              {/* Headlines Section */}
-              {result.headlines && result.headlines.length > 0 && (
-                <div className="ra-section-wrap">
-                  <h2 className="ra-section-title">Generated LinkedIn Headlines</h2>
-                  <div className="ra-card-list">
-                    {result.headlines.map((hl, idx) => {
-                      const label = idx === 0 ? "Style 1 (Classic/Role-based)" :
-                                    idx === 1 ? "Style 2 (Project/Value-driven)" :
-                                    "Style 3 (Achiever/Creative)"
-                      return (
-                        <div key={idx} id={`ra-headline-${idx}`} className="result-card">
-                          <div className="result-card-header">
-                            <div>
-                              <div className="result-eyebrow">{label}</div>
-                              <div className="result-title">Headline Option {idx + 1}</div>
-                            </div>
-                            <button
-                              className={`btn-copy ${copiedHeadline === idx ? 'copied' : ''}`}
-                              onClick={() => copyText(hl, idx, 'headline')}
-                            >
-                              {copiedHeadline === idx ? '✓ Copied' : 'Copy'}
-                            </button>
+        {/* ── Results Output (Appears side-by-side once generated) ── */}
+        {result && !loading && (
+          <div className="ra-results-container">
+            {/* Headlines Section */}
+            {result.headlines && result.headlines.length > 0 && (
+              <div className="ra-section-wrap">
+                <h2 className="ra-section-title">Generated LinkedIn Headlines</h2>
+                <div className="ra-card-list">
+                  {result.headlines.map((hl, idx) => {
+                    const label = idx === 0 ? "Style 1 (Classic/Role-based)" :
+                      idx === 1 ? "Style 2 (Project/Value-driven)" :
+                        "Style 3 (Achiever/Creative)"
+                    return (
+                      <div key={idx} id={`ra-headline-${idx}`} className="result-card">
+                        <div className="result-card-header">
+                          <div>
+                            <div className="result-eyebrow">{label}</div>
+                            <div className="result-title">Headline Option {idx + 1}</div>
                           </div>
-                          <div className="result-hairline" />
-                          <p className="result-text">{hl}</p>
-                          <div className="result-chars">{hl.length} chars</div>
+                          <button
+                            className={`btn-copy ${copiedHeadline === idx ? 'copied' : ''}`}
+                            onClick={() => copyText(hl, idx, 'headline')}
+                          >
+                            {copiedHeadline === idx ? '✓ Copied' : 'Copy'}
+                          </button>
                         </div>
-                      )
-                    })}
-                  </div>
+                        <div className="result-hairline" />
+                        <p className="result-text">{hl}</p>
+                        <div className="result-chars">{hl.length} chars</div>
+                      </div>
+                    )
+                  })}
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Bios Section */}
-              {result.bios && result.bios.length > 0 && (
-                <div className="ra-section-wrap" style={{ marginTop: '24px' }}>
-                  <h2 className="ra-section-title">Generated LinkedIn Bios (First Person)</h2>
-                  <div className="ra-card-list">
-                    {result.bios.map((bio, idx) => {
-                      const label = idx === 0 ? "Professional Tone" :
-                                    idx === 1 ? "Short & Sweet Tone" :
-                                    "Enthusiastic Tone"
-                      return (
-                        <div key={idx} id={`ra-bio-${idx}`} className="result-card">
-                          <div className="result-card-header">
-                            <div>
-                              <div className="result-eyebrow">{label}</div>
-                              <div className="result-title">Bio Option {idx + 1}</div>
-                            </div>
-                            <button
-                              className={`btn-copy ${copiedBio === idx ? 'copied' : ''}`}
-                              onClick={() => copyText(bio, idx, 'bio')}
-                            >
-                              {copiedBio === idx ? '✓ Copied' : 'Copy'}
-                            </button>
+            {/* Bios Section */}
+            {result.bios && result.bios.length > 0 && (
+              <div className="ra-section-wrap">
+                <h2 className="ra-section-title">Generated LinkedIn Bios (First Person)</h2>
+                <div className="ra-card-list">
+                  {result.bios.map((bio, idx) => {
+                    const label = idx === 0 ? "Professional Tone" :
+                      idx === 1 ? "Short & Sweet Tone" :
+                        "Enthusiastic Tone"
+                    return (
+                      <div key={idx} id={`ra-bio-${idx}`} className="result-card">
+                        <div className="result-card-header">
+                          <div>
+                            <div className="result-eyebrow">{label}</div>
+                            <div className="result-title">Bio Option {idx + 1}</div>
                           </div>
-                          <div className="result-hairline" />
-                          <p className="result-text">{bio}</p>
-                          <div className="result-chars">{bio.length} chars</div>
+                          <button
+                            className={`btn-copy ${copiedBio === idx ? 'copied' : ''}`}
+                            onClick={() => copyText(bio, idx, 'bio')}
+                          >
+                            {copiedBio === idx ? '✓ Copied' : 'Copy'}
+                          </button>
                         </div>
-                      )
-                    })}
-                  </div>
+                        <div className="result-hairline" />
+                        <p className="result-text">{bio}</p>
+                        <div className="result-chars">{bio.length} chars</div>
+                      </div>
+                    )
+                  })}
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   )
