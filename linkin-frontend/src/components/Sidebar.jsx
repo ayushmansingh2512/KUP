@@ -11,6 +11,8 @@ const NAV = [
   { id: 'project',  icon: IconBriefcase, label: 'Projects', fullLabel: 'Project Summary' },
   { id: 'outreach', icon: IconMail,      label: 'Outreach', fullLabel: 'Outreach Gen' },
   { id: 'resume',   icon: IconDocument,  label: 'Resume',   fullLabel: 'Resume Analyzer' },
+  { id: 'post-generator', icon: IconPost, label: 'Post Gen', fullLabel: 'Post & Carousel' },
+  { id: 'network-advisor', icon: IconUsers, label: 'Network', fullLabel: 'Network Advisor' },
   { id: 'editor',   icon: IconCamera,    label: 'PFP',      fullLabel: 'PFP Editor' },
 ]
 
@@ -73,6 +75,27 @@ function IconDocument({ size = 22 }) {
     </svg>
   )
 }
+function IconPost({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <line x1="9" y1="10" x2="15" y2="10" />
+      <line x1="9" y1="14" x2="15" y2="14" />
+      <line x1="9" y1="18" x2="13" y2="18" />
+    </svg>
+  )
+}
+function IconUsers({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
 
 function navPath(id) { return `/${id}` }
 
@@ -80,14 +103,6 @@ function navPath(id) { return `/${id}` }
 export default function Sidebar({ onReset }) {
   return (
     <aside className="sidebar">
-      {/* Brand: Lottie replaces old static spark/K icon */}
-      <NavLink to="/headline" className="sidebar-brand" data-cursor="LinkinAI">
-        <div className="sidebar-brand-icon sidebar-lottie-wrap">
-          <Lottie animationData={dashLottie} loop autoplay className="sidebar-brand-lottie" />
-        </div>
-        <span className="sidebar-brand-name">LinkinAI</span>
-      </NavLink>
-
       <nav className="sidebar-nav">
         {NAV.map(({ id, icon: Icon, label }) => (
           <NavLink
@@ -126,8 +141,8 @@ export function MobileHeader() {
           <Lottie animationData={dashLottie} loop autoplay className="sidebar-brand-lottie" />
         </div>
         <div>
-          <div className="mobile-header-title">LinkinAI</div>
-          <div className="mobile-header-sub">KIET Navigator</div>
+          <div className="mobile-header-title">LinkedIn Navigator</div>
+          <div className="mobile-header-sub">AI Branding Suite</div>
         </div>
       </NavLink>
     </header>

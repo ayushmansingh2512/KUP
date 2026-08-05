@@ -7,6 +7,10 @@ import com.example.LinkinAI.dto.LinkedInProfileResponse;
 import com.example.LinkinAI.dto.LinkedInOutreachRequest;
 import com.example.LinkinAI.dto.LinkedInOutreachResponse;
 import com.example.LinkinAI.dto.ResumeAnalysisResponse;
+import com.example.LinkinAI.dto.LinkedInPostRequest;
+import com.example.LinkinAI.dto.LinkedInPostResponse;
+import com.example.LinkinAI.dto.NetworkRecommendationRequest;
+import com.example.LinkinAI.dto.NetworkRecommendationResponse;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -367,5 +371,103 @@ public class LinkedInController {
 
 		String combined = (comp + " " + tit).replaceAll("\\s+", " ").trim();
 		return combined.isEmpty() ? "Software Engineer" : combined;
+	}
+
+	@PostMapping(value = "/generate-post", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<LinkedInPostResponse> generatePost(@RequestBody LinkedInPostRequest request) {
+		String tone = request.getTone() != null ? request.getTone() : "Storytelling";
+		String targetAudience = request.getTargetAudience() != null ? request.getTargetAudience() : "General";
+
+		String systemPrompt = """
+				    You are an elite, world-class professional copywriter, career coach, and personal branding expert.
+				    Your task is to take the details of a project or achievement and generate:
+				    1. An engaging, high-conversion LinkedIn Post (the 'postContent' field).
+				    2. A structured sequence of Carousel Slides (the 'carouselSlides' list field).
+
+				    CRITICAL POST CONSTRAINTS:
+				    - Write the post strictly in the FIRST PERSON ('I', 'my', 'we').
+				    - Start with a compelling hook line (no generic openings like "Thrilled to share...").
+				    - Keep paragraphs extremely short (1-2 sentences max per paragraph) for mobile readability.
+				    - Integrate relevant, professional emojis naturally.
+				    - Detail the problem, your solution, and concrete results/takeaways.
+				    - Conclude with a thought-provoking call to action or question, followed by 3-5 relevant hashtags.
+				    - The tone must be "%s" and tailored to target audience "%s".
+
+				    CRITICAL CAROUSEL CONSTRAINTS:
+				    - Generate a sequence of exactly 5 to 7 slides.
+				    - Each slide object MUST have:
+				      - 'slideNumber': sequential integer starting at 1.
+				      - 'title': A short, punchy slide header (under 50 characters).
+				      - 'content': Concise, high-impact bullet points or short text (under 150 characters total per slide).
+				    - Slide 1: A curiosity-driven hook / Title slide.
+				    - Slide 2: The Core Challenge or Context.
+				    - Slide 3 & 4 (and optionally 5): Key steps, learnings, technical details, or how you solved it.
+				    - Slide 5/6: The ultimate impact, results, or outcome.
+				    - Final Slide (6/7): Clear CTA (e.g. 'Follow for more', 'Let me know your thoughts!').
+				""".formatted(tone, targetAudience);
+
+		LinkedInPostResponse structuredOutput = chatClient.prompt()
+				.system(systemPrompt)
+				.user("Achievement Details: " + request.getAchievementDetails())
+				.call()
+				.entity(new ParameterizedTypeReference<LinkedInPostResponse>() {
+				});
+
+		return ResponseEntity.ok(structuredOutput);
+	}
+
+	@PostMapping(value = "/recommend-network", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<NetworkRecommendationResponse> recommendNetwork(@RequestBody NetworkRecommendationRequest request) {
+		String industry = request.getTargetIndustry() != null && !request.getTargetIndustry().trim().isEmpty()
+				? request.getTargetIndustry().trim()
+				: "Software Engineering & Tech";
+		String level = request.getCareerLevel() != null && !request.getCareerLevel().trim().isEmpty()
+				? request.getCareerLevel().trim()
+				: "Student / Fresher";
+
+		String systemPrompt = """
+				    You are an elite LinkedIn networking strategist and industry analyst.
+				    Your task is to recommend high-value target role categories, well-known public figures, thought leaders, and companies to follow in a given industry, based strictly on your training knowledge base (zero web scraping required).
+
+				    CRITICAL OUTPUT CONSTRAINTS:
+				    1. 'summary': A concise summary (under 250 characters) explaining the target networking strategy for a %s candidate in the %s industry.
+				    2. 'recommendedRoles': EXACTLY 3-4 distinct role titles/level descriptions to search for and connect with (e.g., 'VP of Engineering at mid-size fintechs', 'Senior Technical Recruiter in AI', 'Engineering Managers in Cloud Platforms').
+				    3. 'thoughtLeaders': EXACTLY 4 well-known, real public figures, authors, or domain leaders in %s (e.g., prominent CEOs, tech authors, open-source maintainers, or key industry voices). Each item MUST contain:
+				       - 'name': Real full name of the public figure.
+				       - 'titleRole': Primary title or contribution.
+				       - 'reasonToFollow': Concise reason (under 120 characters) why following them adds value.
+				    4. 'topCompanies': EXACTLY 4 prominent companies, startups, or tech hubs in %s. Each item MUST contain:
+				       - 'companyName': Name of the organization.
+				       - 'domainTagline': Brief tagline of what they build or specialize in.
+				    5. 'networkingTip': 1-2 sentence actionable tip on how to comment on their posts or approach connections in this specific field.
+				""".formatted(level, industry, industry, industry);
+
+		NetworkRecommendationResponse structuredOutput = chatClient.prompt()
+				.system(systemPrompt)
+				.user("Target Industry: " + industry + "\nCareer Level: " + level)
+				.call()
+				.entity(new ParameterizedTypeReference<NetworkRecommendationResponse>() {
+				});
+
+		// Attach search URLs dynamically
+		if (structuredOutput.getThoughtLeaders() != null) {
+			for (NetworkRecommendationResponse.LeaderItem leader : structuredOutput.getThoughtLeaders()) {
+				if (leader.getName() != null) {
+					String encoded = java.net.URLEncoder.encode(leader.getName(), java.nio.charset.StandardCharsets.UTF_8);
+					leader.setSearchUrl("https://www.linkedin.com/search/results/all/?keywords=" + encoded);
+				}
+			}
+		}
+
+		if (structuredOutput.getTopCompanies() != null) {
+			for (NetworkRecommendationResponse.CompanyItem comp : structuredOutput.getTopCompanies()) {
+				if (comp.getCompanyName() != null) {
+					String encoded = java.net.URLEncoder.encode(comp.getCompanyName(), java.nio.charset.StandardCharsets.UTF_8);
+					comp.setSearchUrl("https://www.linkedin.com/search/results/companies/?keywords=" + encoded);
+				}
+			}
+		}
+
+		return ResponseEntity.ok(structuredOutput);
 	}
 }

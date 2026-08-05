@@ -12,6 +12,8 @@ import ProjectGenerator from './components/ProjectGenerator'
 import OutreachGenerator from './components/OutreachGenerator'
 import ResumeAnalyzer from './components/ResumeAnalyzer'
 import JobFinder from './components/JobFinder'
+import PostGenerator from './components/PostGenerator'
+import NetworkAdvisor from './components/NetworkAdvisor'
 import './index.css'
 import './App.css'
 import './components/PhotoEditor.css'
@@ -29,7 +31,7 @@ function AppContent({
   const currentPath = location.pathname
 
   useEffect(() => {
-    const validPaths = ['/headline', '/bio', '/job-finder', '/project', '/outreach', '/resume', '/editor']
+    const validPaths = ['/headline', '/bio', '/job-finder', '/project', '/outreach', '/resume', '/post-generator', '/network-advisor', '/editor']
     if (!validPaths.includes(currentPath)) {
       navigate('/headline', { replace: true })
     }
@@ -59,12 +61,12 @@ function AppContent({
             <BioGenerator />
           </div>
 
-          <div className={`module-page-wrap ${currentPath === '/job-finder' ? '' : 'hidden-tab'}`}>
-            <JobFinder />
-          </div>
-
           <div className={`module-page-wrap ${currentPath === '/project' ? '' : 'hidden-tab'}`}>
             <ProjectGenerator />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/job-finder' ? '' : 'hidden-tab'}`}>
+            <JobFinder />
           </div>
 
           <div className={`module-page-wrap ${currentPath === '/outreach' ? '' : 'hidden-tab'}`}>
@@ -73,6 +75,14 @@ function AppContent({
 
           <div className={`module-page-wrap ${currentPath === '/resume' ? '' : 'hidden-tab'}`}>
             <ResumeAnalyzer />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/post-generator' ? '' : 'hidden-tab'}`}>
+            <PostGenerator />
+          </div>
+
+          <div className={`module-page-wrap ${currentPath === '/network-advisor' ? '' : 'hidden-tab'}`}>
+            <NetworkAdvisor />
           </div>
 
           <div className={`module-page-wrap ${currentPath === '/editor' ? '' : 'hidden-tab'}`}>
@@ -93,9 +103,9 @@ function AppContent({
 }
 
 export default function App() {
-  const [booted, setBooted]           = useState(false)
+  const [booted, setBooted] = useState(false)
   const [personDataUrl, setPersonUrl] = useState(null)
-  const [uploading, setUploading]     = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState(null)
 
   useEffect(() => {
